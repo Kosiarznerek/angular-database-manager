@@ -1,0 +1,78 @@
+<!-- Add button -->
+<button
+        *ngIf="actionListItems"
+        mat-flat-button
+        [disabled]="!allowAdding"
+        color="primary"
+        class="add-button"
+        (click)="onAddButtonClickHandler()"
+>
+    Dodaj nowy
+</button>
+
+<!-- Action list -->
+<mat-accordion class="no-inner-padding" *ngIf="actionListItems && actionListItems.length > 0">
+
+    <!-- Element wrapper -->
+    <mat-expansion-panel *ngFor="let listItem of actionListItems">
+
+        <!-- Element header -->
+        <mat-expansion-panel-header disabled class="primary-on-expand">
+
+            <!-- Title -->
+            <mat-panel-title>{{ listItem.headerTitle }}</mat-panel-title>
+
+            <!-- Description -->
+            <mat-panel-description>{{ listItem.headerDescription }}</mat-panel-description>
+
+        </mat-expansion-panel-header>
+        <!-- /Element header -->
+
+        <!-- Action buttons -->
+        <mat-action-row class="w-100">
+            <div class="col-6">
+                <button
+                        mat-flat-button
+                        [disabled]="!listItem.editable"
+                        color="primary"
+                        class="w-100"
+                        (click)="onEditButtonClickHandler(listItem)"
+                >
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </div>
+            <div class="col-6">
+                <button
+                        mat-flat-button
+                        [disabled]="!listItem.deletable"
+                        color="warn"
+                        class="w-100"
+                        (click)="onDeleteButtonClickHandler(listItem)"
+                >
+                    <mat-icon>delete_forever</mat-icon>
+                </button>
+            </div>
+        </mat-action-row>
+        <!-- /Action buttons -->
+
+        <!-- Element base-details -->
+        <app-details-list [detailsData]="listItem.details"></app-details-list>
+        <!-- /Element base-details -->
+
+    </mat-expansion-panel>
+    <!-- /Element wrapper -->
+
+</mat-accordion>
+<!-- /Action list -->
+
+<!-- No data info -->
+<app-info-card
+        *ngIf="actionListItems && actionListItems.length===0"
+        type="accent"
+        text="Brak dostępnych danych"
+></app-info-card>
+
+<!-- Loading spinner -->
+<div class="mat-spinner-container">
+    <mat-spinner *ngIf="!actionListItems"></mat-spinner>
+</div>

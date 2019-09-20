@@ -1,0 +1,12 @@
+<!-- Page title and description -->
+<h1 class="mat-display-1">{{ (menuItem$ | async).displayName }}</h1>
+<p>{{ (menuItem$ | async).description }}</p>
+<mat-divider></mat-divider>
+<br/>
+
+<!-- Details -->
+<div class="row">
+    <div class="col-12">
+        <app-details-list [detailsData]="details$ | async"></app-details-list>
+    </div>
+</div>

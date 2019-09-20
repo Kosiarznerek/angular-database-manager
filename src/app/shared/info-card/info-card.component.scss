@@ -1,0 +1,18 @@
+@import "../../../assets/css/variables";
+
+mat-card {
+  text-align: center;
+  color: white;
+}
+
+mat-card.primary {
+  background: $primary;
+}
+
+mat-card.accent {
+  background: $accent;
+}
+
+mat-card.warn {
+  background: $warn;
+}

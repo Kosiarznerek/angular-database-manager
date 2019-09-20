@@ -1,0 +1,23 @@
+.dynamic-form-container {
+
+  position: relative;
+  min-height: 130px;
+
+  .mat-spinner-container {
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .mat-spinner-container mat-spinner {
+    display: inline-block;
+  }
+
+  mat-slide-toggle {
+    margin-bottom: 1.25em;
+  }
+
+}
+

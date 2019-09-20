@@ -1,0 +1,20 @@
+mat-panel-title {
+  align-items: center;
+}
+
+mat-panel-description {
+  flex-direction: row-reverse;
+  margin-right: 0;
+}
+
+mat-chip {
+  opacity: 1 !important;
+}
+
+.mat-spinner-container {
+  text-align: center;
+}
+
+.mat-spinner-container mat-spinner {
+  display: inline-block;
+}

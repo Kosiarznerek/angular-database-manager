@@ -1,0 +1,34 @@
+<div [formGroup]="formGroupContext">
+    <mat-form-field>
+        <mat-chip-list #chipList>
+            <mat-chip
+                    *ngFor="let selected of control.value"
+                    [selectable]="selectable"
+                    [removable]="removable"
+                    (removed)="removeChip(selected)"
+            >
+                {{ selected.displayName }}
+                <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+            </mat-chip>
+            <input
+                #dataInput
+                [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"
+                [formControlName]="control.name"
+                [matAutocomplete]="auto"
+                [matChipInputFor]="chipList"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                [matChipInputAddOnBlur]="addChipOnBlur"
+            >
+        </mat-chip-list>
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedChip($event)"
+                          [displayWith]="matAutocompleteDisplayWith">
+            <mat-option *ngFor="let data of control.filteredData$ | async" [value]="data">
+                {{data.displayName}}
+            </mat-option>
+        </mat-autocomplete>
+        <mat-error>
+            <ng-container *ngTemplateOutlet="validatorsTemplate; context:{controlName: control.name}">
+            </ng-container>
+        </mat-error>
+    </mat-form-field>
+</div>

@@ -1,0 +1,44 @@
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 300px;
+}
+
+.sidenav .mat-toolbar {
+  background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.container {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+mat-expansion-panel-header {
+  padding: 0 16px !important;
+}
+
+mat-expansion-panel {
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+mat-expansion-panel * {
+  font-size: 16px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+mat-spinner {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  left: calc(50% - 50px);
+  top: calc(50% - 50px);
+}

@@ -1,0 +1,81 @@
+/* Import */
+@import "./variables";
+
+/* You can add global styles to this file, and also import other style files */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* No padding right on navigation */
+mat-accordion.navigation mat-expansion-panel .mat-expansion-panel-body {
+  padding: 0 0 16px 24px;
+}
+
+/* Disabled in navigation means no extendable */
+mat-accordion.navigation .mat-expansion-panel-header[aria-disabled=true] {
+  color: inherit;
+}
+
+/* Hovered menu items */
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header[aria-disabled=true].cdk-keyboard-focused,
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header[aria-disabled=true].cdk-program-focused,
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header[aria-disabled=true]:hover {
+  background: rgba(0, 0, 0, .04);
+}
+
+/* Active menu items */
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded).active .mat-expansion-panel-header {
+  background: $primary;
+  color: white;
+}
+
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded).active .mat-expansion-panel-header[aria-disabled=true].cdk-keyboard-focused,
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded).active .mat-expansion-panel-header[aria-disabled=true].cdk-program-focused,
+mat-accordion.navigation .mat-expansion-panel:not(.mat-expanded).active .mat-expansion-panel-header:hover {
+  background: $primary;
+  color: white;
+  cursor: context-menu;
+}
+
+/* No inner padding */
+mat-accordion.no-inner-padding mat-expansion-panel .mat-expansion-panel-body {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+/* Colors for mat-according header on expand */
+
+mat-accordion mat-expansion-panel.mat-expanded {
+  mat-expansion-panel-header.primary-on-expand {
+    background: $primary !important;
+
+    mat-panel-title {
+      color: white;
+    }
+
+    mat-panel-description {
+      color: rgba(255, 255, 255, .54);
+    }
+
+    .mat-expansion-indicator::after {
+      color: white;
+    }
+  }
+}
+
+/* Material tabs with no header */
+mat-tab-group.mat-tab-header-display-none mat-tab-header {
+  display: none;
+}
+
+/* Material tabs overflow: visible */
+.mat-tab-body-content {
+  overflow: visible !important;
+}

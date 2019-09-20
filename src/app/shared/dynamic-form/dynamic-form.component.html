@@ -1,0 +1,148 @@
+<!-- Form container -->
+<div class="dynamic-form-container">
+
+    <!-- Form -->
+    <form
+            *ngIf="formData && controlsConfiguration"
+            (ngSubmit)="onFormSubmitHandler()"
+            [autocomplete]="autocomplete"
+            [formGroup]="formData"
+            class="row"
+    >
+
+        <!-- Controls -->
+        <ng-container *ngFor="let control of controlsConfiguration" [ngSwitch]="control.type" class="col-12">
+
+            <!-- text / password / number / email -->
+            <mat-form-field *ngSwitchCase="
+            control.type==='text' ||
+            control.type==='password' ||
+            control.type==='number' ||
+            control.type==='email'
+                ? control.type : ''" class="col-12"
+            >
+                <input [formControlName]="control.name"
+                       [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"
+                       [type]="control.type"
+                       matInput
+                />
+                <mat-error>
+                    <ng-container *ngTemplateOutlet="validatorsTemplate; context:{controlName: control.name}">
+                    </ng-container>
+                </mat-error>
+            </mat-form-field>
+
+            <!-- date -->
+            <mat-form-field *ngSwitchCase="'date'" class="col-12">
+                <input matInput
+                       [matDatepicker]="picker1"
+                       [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"
+                       [formControlName]="control.name"
+                />
+                <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                <mat-datepicker #picker1></mat-datepicker>
+                <mat-error>
+                    <ng-container *ngTemplateOutlet="validatorsTemplate; context:{controlName: control.name}">
+                    </ng-container>
+                </mat-error>
+            </mat-form-field>
+
+            <!-- boolean -->
+            <mat-slide-toggle
+                    class="col-12"
+                    labelPosition="before"
+                    *ngSwitchCase="'boolean'"
+                    [formControlName]="control.name"
+                    [checked]="control.value"
+                    [color]="'primary'"
+            >
+                {{control.validator.isRequired ? '* ' : ''}}{{control.displayName}}
+            </mat-slide-toggle>
+
+            <!-- hidden -->
+            <input
+                    *ngSwitchCase="'hidden'"
+                    type="hidden"
+                    [formControlName]="control.name"
+            />
+
+            <!-- autocomplete -->
+            <mat-form-field class="col-12" *ngSwitchCase="'autocomplete'">
+                <input
+                        appMatAutocompleteEnforceSelection
+                        type="text"
+                        [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"
+                        aria-label="Number"
+                        matInput
+                        [formControlName]="control.name"
+                        [matAutocomplete]="auto"
+                />
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="matAutocompleteDisplayWith">
+                    <mat-option *ngFor="let option of control?.filteredData$ | async" [value]="option">
+                        {{option.displayName}}
+                    </mat-option>
+                </mat-autocomplete>
+                <mat-error>
+                    <ng-container *ngTemplateOutlet="validatorsTemplate; context:{controlName: control.name}">
+                    </ng-container>
+                </mat-error>
+            </mat-form-field>
+
+            <!-- chips -->
+            <app-mat-chips-form-control
+                    *ngSwitchCase="'chips'"
+                    class="col-12"
+                    [control]="control"
+                    [formGroupContext]="formData"
+                    [validatorsTemplate]="validatorsTemplate"
+            ></app-mat-chips-form-control>
+
+            <!-- Unknown control type -->
+            <div *ngSwitchDefault class="col-12 d-flex">
+                <button class="flex-fill" color="warn" mat-raised-button type="button">
+                    Type {{control.type}} is not supported
+                </button>
+            </div>
+
+        </ng-container>
+
+        <!-- Submit button -->
+        <div class="col-12 d-flex mt-2" *ngIf="controlsConfiguration && controlsConfiguration.length !== 0">
+            <button [disabled]="!formData.valid" class="flex-fill" color="primary" mat-raised-button type="submit">
+                {{ submitButtonText ? submitButtonText : 'Wyślij' }}
+            </button>
+        </div>
+
+    </form>
+
+    <!-- Loading spinner -->
+    <div class="mat-spinner-container">
+        <mat-spinner *ngIf="!controlsConfiguration || submitModeEnabled"></mat-spinner>
+    </div>
+
+</div>
+<!-- /Form container -->
+
+<!-- Validators template -->
+<ng-template #validatorsTemplate let-controlName="controlName">
+    <mat-error *ngIf="formData.hasError('required',controlName)">
+        Pole jest wymagane
+    </mat-error>
+    <mat-error *ngIf="formData.hasError('minlength',controlName)">
+        Minimalna długość to {{ formData.controls[controlName].errors['minlength']['requiredLength'] }}
+    </mat-error>
+    <mat-error *ngIf="formData.hasError('maxlength',controlName)">
+        Maksymalna długość to {{ formData.controls[controlName].errors['maxlength']['requiredLength'] }}
+    </mat-error>
+    <mat-error *ngIf="formData.hasError('email',controlName)">
+        Nieprawidłowy adres email
+    </mat-error>
+</ng-template>
+<!-- /Validators template -->
+
+<!-- No controls info -->
+<app-info-card
+        *ngIf="controlsConfiguration && controlsConfiguration.length === 0"
+        type="accent"
+        text="Brak danych do uzupełnienia">
+</app-info-card>

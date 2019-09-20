@@ -1,0 +1,53 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+                 [mode]="(isHandset$ | async) ? 'over' : 'side'"
+                 [opened]="!(isHandset$ | async)"
+                 class="sidenav"
+                 fixedInViewport="true">
+        <mat-toolbar>Menu</mat-toolbar>
+        <mat-nav-list>
+            <mat-spinner *ngIf="!menuItems"></mat-spinner>
+            <ng-template #menuTemplate let-items>
+                <mat-accordion class="navigation">
+                    <ng-container *ngFor="let menuItem of items" [ngSwitch]="menuItem.children.length">
+                        <mat-expansion-panel *ngSwitchCase="0" [routerLink]="menuItem.routerLink"
+                                             [routerLinkActive]="'active'" [disabled]="true">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>{{ menuItem.displayName }}</mat-panel-title>
+                            </mat-expansion-panel-header>
+                        </mat-expansion-panel>
+                        <mat-expansion-panel *ngSwitchDefault>
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>{{ menuItem.displayName }}</mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <ng-container *ngTemplateOutlet="menuTemplate; context:{ $implicit: menuItem.children }">
+                            </ng-container>
+                        </mat-expansion-panel>
+                    </ng-container>
+                </mat-accordion>
+            </ng-template>
+            <ng-container *ngTemplateOutlet="menuTemplate; context:{ $implicit: menuItems }">
+            </ng-container>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">
+            <button
+                    (click)="drawer.toggle()"
+                    *ngIf="isHandset$ | async"
+                    aria-label="Toggle sidenav"
+                    mat-icon-button
+                    type="button">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span class="flex-fill">Database Manager</span>
+            <button mat-icon-button (click)="onSignOutButtonClickHandler()">
+                <mat-icon>power_settings_new</mat-icon>
+            </button>
+        </mat-toolbar>
+        <!-- Add Content Here -->
+        <div class="container">
+            <router-outlet></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>
