@@ -1,6 +1,4 @@
 // Form control type
-import {Observable} from 'rxjs';
-
 export type TFormControlType =
   'text' |
   'password' |
@@ -27,28 +25,6 @@ export interface IFormControlConfiguration {
   type: TFormControlType;
   validator: IFormControlValidator;
   isDisabled?: boolean;
+  onChange?: string;
+  onFilteredOptionData?: string;
 }
-
-// Filtered option data (used in autocomplete and chips)
-export interface IFilteredOptionData {
-  value: any;
-  displayName: string;
-}
-
-// Filtered data provider
-export type TFilteredOptionDataProvider = (
-  searchPhrase: string | null, // null for first run
-  control: IFormControlConfiguration,
-  currentFormValue: object,
-) => Observable<IFilteredOptionData[]>;
-
-// Form control update
-export interface IFormControlUpdate {
-  name: string; // form control to update
-  value: any; // new value to assign
-}
-
-// Form control change handler
-export type FormControlChangeHandler = (
-  control: IFormControlConfiguration,
-) => Observable<IFormControlUpdate[]>;

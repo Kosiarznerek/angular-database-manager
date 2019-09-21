@@ -2,11 +2,11 @@ import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import {IActionListItem} from '../../../shared/action-list/action-list.component.models';
-import {IFilteredOptionData, IFormControlUpdate,} from '../../../shared/dynamic-form/dynamic-form.component.models';
-import {IFormControlConfiguration, IGridData, IGridDefinition} from './grid.service.models';
+import {IGridData, IGridDefinition} from './grid.service.models';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
 import {environment} from '../../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
+import {IFormControlConfiguration} from '../../../shared/dynamic-form/dynamic-form.component.models';
 
 @Injectable({
   providedIn: 'root',
@@ -101,55 +101,6 @@ export class GridService {
     ).pipe(
       catchError(() => of(false)),
     );
-
-  }
-
-  /**
-   * Gets data for autocompletes
-   */
-  public getFilteredOptionData(
-    searchPhrase: string, control: IFormControlConfiguration, currentFormValue: object,
-  ): Observable<IFilteredOptionData[]> {
-
-    return this._httpClient.post<IFilteredOptionData[]>(
-      `${environment.serverOrigin}/${control.onFilteredOptionData}`,
-      {control: this._cloneFormControlConfiguration(control), currentFormValue},
-      {params: {searchPhrase}},
-    );
-
-  }
-
-  /**
-   * Gets property on change response
-   */
-  public getPropertyOnChangeResponse(controllerSource: string, control: IFormControlConfiguration): Observable<IFormControlUpdate[]> {
-
-    return typeof control.onChange === 'string'
-      ? this._httpClient.post<IFormControlUpdate[]>(
-        `${environment.serverOrigin}/${controllerSource}/${control.onChange}`,
-        this._cloneFormControlConfiguration(control),
-      )
-      : of([]);
-
-  }
-
-  /**
-   * Clones form control configuration
-   * @param control Control to parse
-   */
-  private _cloneFormControlConfiguration(control: IFormControlConfiguration): IFormControlConfiguration {
-
-    const {
-      name, displayName, value,
-      type, validator, onChange,
-      isDisabled, onFilteredOptionData,
-    } = control;
-
-    return {
-      name, displayName, value,
-      type, validator, onChange,
-      isDisabled, onFilteredOptionData,
-    };
 
   }
 

@@ -1,14 +1,10 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {
-  FormControlChangeHandler,
-  IFilteredOptionData,
-  IFormControlConfiguration as IFormControlBasicConfiguration,
-  IFormControlUpdate,
-  TFilteredOptionDataProvider,
-} from './dynamic-form.component.models';
+import {IFormControlConfiguration as IFormControlBasicConfiguration,} from './dynamic-form.component.models';
 import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, tap} from 'rxjs/operators';
 import {Observable} from 'rxjs';
+import {IFilteredOptionData, IFormControlUpdate} from '../dynamic-form-data/dynamic-form-data.service.models';
+import {DynamicFormDataService} from '../dynamic-form-data/dynamic-form-data.service';
 
 // Extending IFormControlBasicConfiguration
 interface IFormControlConfiguration extends IFormControlBasicConfiguration {
@@ -25,12 +21,13 @@ export class DynamicFormComponent {
   // Component data
   @Input() submitButtonText?: string;
   @Input() autocomplete?: 'on' | 'off';
-  @Input() formControlChangeHandler: FormControlChangeHandler;
   @Output() formSubmit: EventEmitter<FormGroup>;
 
   public formData: FormGroup;
 
-  constructor() {
+  constructor(
+    private readonly _dynamicFormDataService: DynamicFormDataService,
+  ) {
 
     this.formSubmit = new EventEmitter();
 
@@ -98,7 +95,7 @@ export class DynamicFormComponent {
 
     // Add change handler foreach form control
     configuration.forEach(v => this.formData.get(v.name).valueChanges.pipe(
-      filter(k => typeof this.formControlChangeHandler === 'function'),
+      filter(k => typeof v.onChange === 'string'),
       filter(k => {
         if (v.type === 'chips' || v.type === 'autocomplete') {
           return k instanceof Object;
@@ -108,13 +105,25 @@ export class DynamicFormComponent {
       }),
       distinctUntilChanged(),
       map(k => v),
-      switchMap(control => this.formControlChangeHandler(control).pipe(
-        tap(updates => updates.forEach(up => this._applyFormControlUpdate(up))),
-      )),
-    ).subscribe());
+      switchMap(control =>
+        this._dynamicFormDataService.getPropertyOnChangeResponse(control).pipe(
+          tap(updates => updates.forEach(up => this._applyFormControlUpdate(up))),
+        )
+      )).subscribe());
 
-    // Reassigning filtered data provider
-    this._reassignFilteredOptionDataProvider();
+    // Assign valueChange to autocomplete and chips
+    this._controlsConfiguration
+      .filter(v => v.type === 'autocomplete' || v.type === 'chips')
+      .forEach(control => control.filteredData$ = this.formData.get(control.name).valueChanges.pipe(
+        startWith(''),
+        debounceTime(400),
+        map(v => typeof v === 'string' ? v : ''),
+        switchMap(searchPhrase => this._dynamicFormDataService.getFilteredOptionData(
+          searchPhrase,
+          control,
+          this.formData.value,
+        )),
+      ));
 
   }
 
@@ -132,44 +141,6 @@ export class DynamicFormComponent {
 
     // Apply update
     control.setValue(update.value);
-
-  }
-
-  /**
-   * FilteredOptionDataProvider
-   */
-  private _filteredOptionDataProvider: TFilteredOptionDataProvider;
-  @Input()
-  public set filteredOptionDataProvider(provider: TFilteredOptionDataProvider) {
-
-    this._filteredOptionDataProvider = provider;
-    this._reassignFilteredOptionDataProvider();
-
-  }
-
-  /**
-   * Assigns filtered data provider
-   */
-  private _reassignFilteredOptionDataProvider(): void {
-
-    // No controls or no provider
-    if (!Array.isArray(this._controlsConfiguration) || typeof this._filteredOptionDataProvider !== 'function') {
-      return;
-    }
-
-    // Assign valueChange to autocomplete and chips
-    this._controlsConfiguration
-      .filter(v => v.type === 'autocomplete' || v.type === 'chips')
-      .forEach(control => control.filteredData$ = this.formData.get(control.name).valueChanges.pipe(
-        startWith(''),
-        debounceTime(400),
-        map(v => typeof v === 'string' ? v : ''),
-        switchMap(searchPhrase => this._filteredOptionDataProvider(
-          searchPhrase,
-          control,
-          this.formData.value,
-        )),
-      ));
 
   }
 

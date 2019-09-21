@@ -33,8 +33,6 @@
     </button>
     <app-dynamic-form
       [autocomplete]="'off'"
-      [filteredOptionDataProvider]="filteredOptionDataProvider"
-      [formControlChangeHandler]="formControlChangeHandler"
       [submitModeEnabled]="activeFormSubmitModeEnabled"
       (formSubmit)="onAddSubmitHandler($event)"
       [controlsConfiguration]="activeFormControlsConfiguration">
@@ -52,8 +50,6 @@
     </button>
     <app-dynamic-form
       [autocomplete]="'off'"
-      [filteredOptionDataProvider]="filteredOptionDataProvider"
-      [formControlChangeHandler]="formControlChangeHandler"
       [submitModeEnabled]="activeFormSubmitModeEnabled"
       (formSubmit)="onEditSubmitHandler($event)"
       [controlsConfiguration]="activeFormControlsConfiguration">

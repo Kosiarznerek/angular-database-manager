@@ -5,11 +5,7 @@ import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {GridService} from '../../services/grid/grid.service';
 import {IGridData, IGridDefinition} from '../../services/grid/grid.service.models';
 import {IActionInfo, IActionListItem} from '../../../shared/action-list/action-list.component.models';
-import {
-  IFilteredOptionData,
-  IFormControlConfiguration,
-  IFormControlUpdate
-} from '../../../shared/dynamic-form/dynamic-form.component.models';
+import {IFormControlConfiguration} from '../../../shared/dynamic-form/dynamic-form.component.models';
 import {finalize, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
 import {EGridState} from './grid.component.models';
 import {FormGroup} from '@angular/forms';
@@ -242,35 +238,5 @@ export class GridComponent implements OnInit {
     );
 
   }
-
-  /**
-   * Function used to provide data for autocompletes
-   */
-  public filteredOptionDataProvider = (
-    searchPhrase: string, control: IFormControlConfiguration, currentFormValue: object,
-  ): Observable<IFilteredOptionData[]> => {
-
-    return this._gridService.getFilteredOptionData(
-      searchPhrase,
-      control,
-      currentFormValue,
-    );
-
-  };
-
-  /**
-   * Executes when control value on form has changed
-   */
-  public formControlChangeHandler = (control: IFormControlConfiguration): Observable<IFormControlUpdate[]> => {
-
-    return this.menuItem$.pipe(
-      take(1),
-      switchMap(({controllerSource}) => this._gridService.getPropertyOnChangeResponse(
-        controllerSource,
-        control,
-      )),
-    );
-
-  };
 
 }

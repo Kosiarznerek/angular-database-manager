@@ -1,11 +1,9 @@
 import {Component, ElementRef, Input, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {
-  IFilteredOptionData,
-  IFormControlConfiguration as IFormControlBasicConfiguration
-} from '../dynamic-form/dynamic-form.component.models';
+import {IFormControlConfiguration as IFormControlBasicConfiguration} from '../dynamic-form/dynamic-form.component.models';
 import {FormGroup} from '@angular/forms';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocomplete, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+import {IFilteredOptionData} from '../dynamic-form-data/dynamic-form-data.service.models';
 
 // Adding type to value
 interface IFormControlConfiguration extends IFormControlBasicConfiguration {
