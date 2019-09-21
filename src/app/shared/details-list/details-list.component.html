@@ -1,52 +1,52 @@
 <!-- Details template -->
 <ng-template let-data #detailsTemplate>
-    <mat-accordion class="navigation no-inner-padding">
-        <mat-expansion-panel
-                [disabled]="!item.subDetails || item.subDetails.length===0"
-                *ngFor="let item of data"
-        >
+  <mat-accordion class="navigation no-inner-padding">
+    <mat-expansion-panel
+      [disabled]="!item.subDetails || item.subDetails.length===0"
+      *ngFor="let item of data"
+    >
 
-            <!-- Header -->
-            <mat-expansion-panel-header>
+      <!-- Header -->
+      <mat-expansion-panel-header>
 
-                <!-- Title -->
-                <mat-panel-title>{{ item.displayName }}</mat-panel-title>
+        <!-- Title -->
+        <mat-panel-title>{{ item.displayName }}</mat-panel-title>
 
-                <!-- Description -->
-                <mat-panel-description>
-                    <mat-chip-list>
-                        <mat-chip color="primary" selected disabled *ngFor="let value of item.values">
-                            {{ value }}
-                        </mat-chip>
-                    </mat-chip-list>
-                </mat-panel-description>
+        <!-- Description -->
+        <mat-panel-description>
+          <mat-chip-list>
+            <mat-chip color="primary" selected disabled *ngFor="let value of item.values">
+              {{ value }}
+            </mat-chip>
+          </mat-chip-list>
+        </mat-panel-description>
 
-            </mat-expansion-panel-header>
-            <!-- /Header -->
+      </mat-expansion-panel-header>
+      <!-- /Header -->
 
-            <!-- Recursive list -->
-            <ng-container *ngTemplateOutlet="detailsTemplate; context:{$implicit: item.subDetails}">
-            </ng-container>
+      <!-- Recursive list -->
+      <ng-container *ngTemplateOutlet="detailsTemplate; context:{$implicit: item.subDetails}">
+      </ng-container>
 
-        </mat-expansion-panel>
-    </mat-accordion>
+    </mat-expansion-panel>
+  </mat-accordion>
 </ng-template>
 <!-- /Details template -->
 
 <!-- Details outlet -->
 <ng-container *ngIf="detailsData && detailsData.length > 0">
-    <ng-container *ngTemplateOutlet="detailsTemplate; context:{$implicit: detailsData}">
-    </ng-container>
+  <ng-container *ngTemplateOutlet="detailsTemplate; context:{$implicit: detailsData}">
+  </ng-container>
 </ng-container>
 
 <!-- No base-details info -->
 <app-info-card
-        *ngIf="detailsData && detailsData.length === 0"
-        type="accent"
-        text="Brak dostępnych danych">
+  *ngIf="detailsData && detailsData.length === 0"
+  type="accent"
+  text="Brak dostępnych danych">
 </app-info-card>
 
 <!-- Loading spinner -->
 <div class="mat-spinner-container">
-    <mat-spinner *ngIf="!detailsData"></mat-spinner>
+  <mat-spinner *ngIf="!detailsData"></mat-spinner>
 </div>

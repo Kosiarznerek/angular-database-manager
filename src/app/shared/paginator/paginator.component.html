@@ -1,30 +1,30 @@
 <mat-card>
-    <div class="row">
+  <div class="row">
 
-        <!-- Page info -->
-        <div class="col-md-5 line-height-40">
-            {{ state.currentPage }} z {{state.totalPages}}
-        </div>
-
-        <!-- Page change -->
-        <div class="col-md-2 line-height-40">
-            <button mat-mini-fab color="primary" (click)="onPreviousPageClickHandler()">
-                <mat-icon>keyboard_arrow_left</mat-icon>
-            </button>
-            <button mat-mini-fab color="primary" (click)="onNextPageClickHandler()">
-                <mat-icon>keyboard_arrow_right</mat-icon>
-            </button>
-        </div>
-
-        <!-- Page sizes -->
-        <div class="col-md-5 line-height-40">
-            Ilość el. na strone:
-            <mat-select [value]="state.currentPageSize" (valueChange)="onCurrentPageSizeChangeHandler($event)">
-                <mat-option *ngFor="let pageSize of state.pageSizeOptions" [value]="pageSize">
-                    {{ pageSize }}
-                </mat-option>
-            </mat-select>
-        </div>
-
+    <!-- Page info -->
+    <div class="col-md-5 line-height-40">
+      {{ state.currentPage }} z {{state.totalPages}}
     </div>
+
+    <!-- Page change -->
+    <div class="col-md-2 line-height-40">
+      <button mat-mini-fab color="primary" (click)="onPreviousPageClickHandler()">
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </button>
+      <button mat-mini-fab color="primary" (click)="onNextPageClickHandler()">
+        <mat-icon>keyboard_arrow_right</mat-icon>
+      </button>
+    </div>
+
+    <!-- Page sizes -->
+    <div class="col-md-5 line-height-40">
+      Ilość el. na strone:
+      <mat-select [value]="state.currentPageSize" (valueChange)="onCurrentPageSizeChangeHandler($event)">
+        <mat-option *ngFor="let pageSize of state.pageSizeOptions" [value]="pageSize">
+          {{ pageSize }}
+        </mat-option>
+      </mat-select>
+    </div>
+
+  </div>
 </mat-card>

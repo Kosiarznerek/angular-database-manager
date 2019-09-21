@@ -6,24 +6,26 @@ import {environment} from '../../../../environments/environment';
 import {catchError} from 'rxjs/operators';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class NavigationService {
 
-    constructor(
-        private _httpClient: HttpClient,
-    ) {
-    }
+  constructor(
+    private readonly _httpClient: HttpClient,
+  ) {
+  }
 
-    /**
-     * Gets menu
-     */
-    public get menuItems(): Observable<IMenuItem[]> {
-        return this._httpClient
-            .get<IMenuItem[]>(`${environment.serverOrigin}/user-menu`)
-            .pipe(
-                catchError(() => of([])),
-            );
-    }
+  /**
+   * Gets menu
+   */
+  public get menuItems(): Observable<IMenuItem[]> {
+
+    return this._httpClient
+      .get<IMenuItem[]>(`${environment.serverOrigin}/user-menu`)
+      .pipe(
+        catchError(() => of([])),
+      );
+
+  }
 
 }

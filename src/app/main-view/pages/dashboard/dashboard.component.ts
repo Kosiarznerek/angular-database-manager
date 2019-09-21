@@ -4,20 +4,22 @@ import {Observable} from 'rxjs';
 import {IMenuItem} from '../../services/navigation/navigation.service.models';
 
 @Component({
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss']
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
 
-    public menuItem$: Observable<IMenuItem>;
+  public menuItem$: Observable<IMenuItem>;
 
-    constructor(
-        private _activatedRoute: ActivatedRoute,
-    ) {
-    }
+  constructor(
+    private readonly _activatedRoute: ActivatedRoute,
+  ) {
+  }
 
-    ngOnInit() {
-        this.menuItem$ = this._activatedRoute.data as Observable<IMenuItem>;
-    }
+  ngOnInit() {
+
+    this.menuItem$ = this._activatedRoute.data as Observable<IMenuItem>;
+
+  }
 
 }

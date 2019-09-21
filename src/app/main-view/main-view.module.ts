@@ -11,25 +11,25 @@ import {ControllerTypeErrorComponent} from './pages/controller-type-error/contro
 import {SharedModule} from '../shared/shared.module';
 
 @NgModule({
-    declarations: [
-        NavigationComponent,
-        DashboardComponent,
-        GridComponent,
-        DetailsComponent,
-        ControllerTypeErrorComponent,
-    ],
-    entryComponents: [
-        DashboardComponent,
-        GridComponent,
-        DetailsComponent,
-        ControllerTypeErrorComponent,
-    ],
-    imports: [
-        CommonModule,
-        MainViewRoutingModule,
-        AngularMaterialModule,
-        SharedModule,
-    ],
+  declarations: [
+    NavigationComponent,
+    DashboardComponent,
+    GridComponent,
+    DetailsComponent,
+    ControllerTypeErrorComponent,
+  ],
+  entryComponents: [
+    DashboardComponent,
+    GridComponent,
+    DetailsComponent,
+    ControllerTypeErrorComponent,
+  ],
+  imports: [
+    CommonModule,
+    MainViewRoutingModule,
+    AngularMaterialModule,
+    SharedModule,
+  ],
 })
 export class MainViewModule {
 }

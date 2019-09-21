@@ -21,10 +21,11 @@
         <!-- Content -->
         <div class="card-body mb-2">
           <app-dynamic-form
-                  autocomplete="off"
-                  submitButtonText="Stwórz"
-                  [controlsConfiguration]="controlsConfiguration"
-                  (formSubmit)="onFormSubmitHandler($event)"
+            autocomplete="off"
+            submitButtonText="Stwórz"
+            [submitModeEnabled]="formSubmitModeEnabled"
+            [controlsConfiguration]="controlsConfiguration | async"
+            (formSubmit)="onFormSubmitHandler($event)"
           >
           </app-dynamic-form>
         </div>
@@ -32,8 +33,12 @@
         <!-- Footer -->
         <div class="card-footer row mt-3">
           <div class="col-12 d-flex">
-            <button class="flex-fill mr-16" mat-raised-button routerLink="">Zaloguj</button>
-            <button class="flex-fill" mat-raised-button routerLink="../forgot-password">Przypomnij hasło</button>
+            <button class="flex-fill mr-16" mat-raised-button routerLink="">
+              Zaloguj
+            </button>
+            <button class="flex-fill" mat-raised-button routerLink="../reset-password">
+              Resetuj hasło
+            </button>
           </div>
         </div>
 

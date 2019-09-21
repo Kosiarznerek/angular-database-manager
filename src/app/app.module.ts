@@ -7,17 +7,17 @@ import {AppRoutingModule} from './app-routing.module';
 import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
-    declarations: [
-        AppComponent,
-    ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
-        BrowserAnimationsModule,
-        AppRoutingModule,
-    ],
-    providers: [],
-    bootstrap: [AppComponent],
+  declarations: [
+    AppComponent,
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    AppRoutingModule,
+  ],
+  providers: [],
+  bootstrap: [AppComponent],
 })
 export class AppModule {
 }

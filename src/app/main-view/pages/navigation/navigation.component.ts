@@ -11,110 +11,114 @@ import {ControllerTypeErrorComponent} from '../controller-type-error/controller-
 import {DashboardComponent} from '../dashboard/dashboard.component';
 
 @Component({
-    templateUrl: './navigation.component.html',
-    styleUrls: ['./navigation.component.scss']
+  templateUrl: './navigation.component.html',
+  styleUrls: ['./navigation.component.scss']
 })
 export class NavigationComponent {
 
-    // Component data
-    isHandset$: Observable<boolean> = this._breakpointObserver.observe(Breakpoints.Handset).pipe(
-        map(result => result.matches)
-    );
-    public menuItems: IMenuItem[];
+  // Component data
+  isHandset$: Observable<boolean> = this._breakpointObserver.observe(Breakpoints.Handset).pipe(
+    map(result => result.matches)
+  );
+  public menuItems: IMenuItem[];
 
-    constructor(
-        private _breakpointObserver: BreakpointObserver,
-        private _navigationService: NavigationService,
-        private  _activatedRoute: ActivatedRoute,
-        private _router: Router
-    ) {
-        this._initComponent();
+  constructor(
+    private readonly _breakpointObserver: BreakpointObserver,
+    private readonly _navigationService: NavigationService,
+    private readonly _activatedRoute: ActivatedRoute,
+    private readonly _router: Router
+  ) {
+    this._initComponent();
+  }
+
+  /**
+   * Inits component
+   */
+  private _initComponent(): void {
+
+    this._navigationService.menuItems
+      .subscribe(r => {
+        this._activatedRoute.routeConfig.children = [];
+        this._initRouting(r);
+        this.menuItems = r;
+        this._router.navigate(
+          [this.menuItems[0].routerLink],
+          {relativeTo: this._activatedRoute}
+        );
+      });
+
+  }
+
+  /**
+   * Inits routing
+   */
+  private _initRouting(menuItems: IMenuItem[], parent: Route[] = this._activatedRoute.routeConfig.children) {
+
+    // Foreach menu item
+    menuItems.forEach(v => {
+
+      // Creating route
+      const route: Route = this._createRoute(v);
+
+      // Init sub items
+      if (v.children.length > 0) {
+        this._initRouting(v.children, route.children);
+      }
+
+      // Push to parent
+      parent.push(route);
+
+    });
+
+  }
+
+  /**
+   * Creates route for menu item
+   */
+  private _createRoute(menuItem: IMenuItem): Route {
+
+    // Creating route
+    const route: Route = {
+      path: menuItem.routePath,
+      data: menuItem,
+      children: []
+    };
+
+    // Assign component
+    switch (menuItem.controllerType) {
+      case 'grid':
+        route.component = GridComponent;
+        break;
+      case 'details':
+        route.component = DetailsComponent;
+        break;
+      case 'dashboard':
+        route.component = DashboardComponent;
+        break;
+      case 'empty':
+        break;
+      default:
+        route.component = ControllerTypeErrorComponent;
+        break;
     }
 
-    /**
-     * Inits component
-     */
-    private _initComponent(): void {
-        this._navigationService.menuItems
-            .subscribe(r => {
-                this._activatedRoute.routeConfig.children = [];
-                this._initRouting(r);
-                this.menuItems = r;
-                this._router.navigate(
-                    [this.menuItems[0].routerLink],
-                    {relativeTo: this._activatedRoute}
-                );
-            });
+    // Depending on child
+    if (menuItem.children.length === 0) {
+      delete route.children;
     }
 
-    /**
-     * Inits routing
-     */
-    private _initRouting(menuItems: IMenuItem[], parent: Route[] = this._activatedRoute.routeConfig.children) {
+    // Returning route
+    return route;
 
-        // Foreach menu item
-        menuItems.forEach(v => {
+  }
 
-            // Creating route
-            const route: Route = this._createRoute(v);
+  /**
+   * On user sign out
+   */
+  public onSignOutButtonClickHandler() {
 
-            // Init sub items
-            if (v.children.length > 0) {
-                this._initRouting(v.children, route.children);
-            }
+    this._router.navigate(['/']);
 
-            // Push to parent
-            parent.push(route);
-
-        });
-
-    }
-
-    /**
-     * Creates route for menu item
-     */
-    private _createRoute(menuItem: IMenuItem): Route {
-
-        // Creating route
-        const route: Route = {
-            path: menuItem.routePath,
-            data: menuItem,
-            children: []
-        };
-
-        // Assign component
-        switch (menuItem.controllerType) {
-            case 'grid':
-                route.component = GridComponent;
-                break;
-            case 'details':
-                route.component = DetailsComponent;
-                break;
-            case 'dashboard':
-                route.component = DashboardComponent;
-                break;
-            case 'empty':
-                break;
-            default:
-                route.component = ControllerTypeErrorComponent;
-                break;
-        }
-
-        // Depending on child
-        if (menuItem.children.length === 0) {
-            delete route.children;
-        }
-
-        // Returning route
-        return route;
-
-    }
-
-    /**
-     * On user sign out
-     */
-    public onSignOutButtonClickHandler() {
-        this._router.navigate(['/']);
-    }
+  }
 
 }

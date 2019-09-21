@@ -7,57 +7,57 @@
 <!-- Action list -->
 <mat-tab-group [(selectedIndex)]="activeGridState" class="mat-tab-header-display-none">
 
-    <!-- Action list -->
-    <mat-tab [label]="EGridState.ActionList">
-        <app-action-list
-                [allowAdding]="(gridDefinition$ | async)?.allowAdding"
-                [actionListItems]="(gridData$ | async)?.items"
-                (action)="onActionListItemClickHandler($event)">
-        </app-action-list>
-        <app-paginator
-                class="mt-16"
-                *ngIf="paginatorState"
-                [state]="paginatorState"
-                (stateChange)="onPaginatorStateChangeHandler($event)"
-        ></app-paginator>
-    </mat-tab>
+  <!-- Action list -->
+  <mat-tab [label]="EGridState.ActionList">
+    <app-action-list
+      [allowAdding]="(gridDefinition$ | async)?.allowAdding"
+      [actionListItems]="(gridData$ | async)?.items"
+      (action)="onActionListItemClickHandler($event)">
+    </app-action-list>
+    <app-paginator
+      class="mt-16"
+      *ngIf="paginatorState"
+      [state]="paginatorState"
+      (stateChange)="onPaginatorStateChangeHandler($event)"
+    ></app-paginator>
+  </mat-tab>
 
-    <!-- Add form -->
-    <mat-tab [label]="EGridState.AddForm">
-        <button
-                class="cancel-button"
-                color="accent"
-                mat-raised-button
-                (click)="activeGridState=EGridState.ActionList">
-            Anuluj
-        </button>
-        <app-dynamic-form
-                [autocomplete]="'off'"
-                [filteredOptionDataProvider]="filteredOptionDataProvider"
-                [formControlChangeHandler]="formControlChangeHandler"
-                [submitModeEnabled]="activeFormSubmitModeEnabled"
-                (formSubmit)="onAddSubmitHandler($event)"
-                [controlsConfiguration]="activeFormControlsConfiguration">
-        </app-dynamic-form>
-    </mat-tab>
+  <!-- Add form -->
+  <mat-tab [label]="EGridState.AddForm">
+    <button
+      class="cancel-button"
+      color="accent"
+      mat-raised-button
+      (click)="activeGridState=EGridState.ActionList">
+      Anuluj
+    </button>
+    <app-dynamic-form
+      [autocomplete]="'off'"
+      [filteredOptionDataProvider]="filteredOptionDataProvider"
+      [formControlChangeHandler]="formControlChangeHandler"
+      [submitModeEnabled]="activeFormSubmitModeEnabled"
+      (formSubmit)="onAddSubmitHandler($event)"
+      [controlsConfiguration]="activeFormControlsConfiguration">
+    </app-dynamic-form>
+  </mat-tab>
 
-    <!-- Edit form -->
-    <mat-tab [label]="EGridState.EditForm">
-        <button
-                class="cancel-button"
-                color="accent"
-                mat-raised-button
-                (click)="activeGridState=EGridState.ActionList">
-            Anuluj
-        </button>
-        <app-dynamic-form
-                [autocomplete]="'off'"
-                [filteredOptionDataProvider]="filteredOptionDataProvider"
-                [formControlChangeHandler]="formControlChangeHandler"
-                [submitModeEnabled]="activeFormSubmitModeEnabled"
-                (formSubmit)="onEditSubmitHandler($event)"
-                [controlsConfiguration]="activeFormControlsConfiguration">
-        </app-dynamic-form>
-    </mat-tab>
+  <!-- Edit form -->
+  <mat-tab [label]="EGridState.EditForm">
+    <button
+      class="cancel-button"
+      color="accent"
+      mat-raised-button
+      (click)="activeGridState=EGridState.ActionList">
+      Anuluj
+    </button>
+    <app-dynamic-form
+      [autocomplete]="'off'"
+      [filteredOptionDataProvider]="filteredOptionDataProvider"
+      [formControlChangeHandler]="formControlChangeHandler"
+      [submitModeEnabled]="activeFormSubmitModeEnabled"
+      (formSubmit)="onEditSubmitHandler($event)"
+      [controlsConfiguration]="activeFormControlsConfiguration">
+    </app-dynamic-form>
+  </mat-tab>
 
 </mat-tab-group>
