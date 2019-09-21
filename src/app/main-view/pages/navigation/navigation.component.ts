@@ -8,7 +8,6 @@ import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {GridComponent} from '../grid/grid.component';
 import {DetailsComponent} from '../details/details.component';
 import {ControllerTypeErrorComponent} from '../controller-type-error/controller-type-error.component';
-import {DashboardComponent} from '../dashboard/dashboard.component';
 
 @Component({
   templateUrl: './navigation.component.html',
@@ -36,15 +35,12 @@ export class NavigationComponent {
    */
   private _initComponent(): void {
 
+    // Getting menu items
     this._navigationService.menuItems
       .subscribe(r => {
         this._activatedRoute.routeConfig.children = [];
         this._initRouting(r);
         this.menuItems = r;
-        this._router.navigate(
-          [this.menuItems[0].routerLink],
-          {relativeTo: this._activatedRoute}
-        );
       });
 
   }
@@ -91,9 +87,6 @@ export class NavigationComponent {
         break;
       case 'details':
         route.component = DetailsComponent;
-        break;
-      case 'dashboard':
-        route.component = DashboardComponent;
         break;
       case 'empty':
         break;

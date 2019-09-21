@@ -1,25 +1,16 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {Observable} from 'rxjs';
-import {IMenuItem} from '../../services/navigation/navigation.service.models';
 
 @Component({
+  selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
 
-  public menuItem$: Observable<IMenuItem>;
-
-  constructor(
-    private readonly _activatedRoute: ActivatedRoute,
-  ) {
+  constructor() {
   }
 
   ngOnInit() {
-
-    this.menuItem$ = this._activatedRoute.data as Observable<IMenuItem>;
-
   }
 
 }

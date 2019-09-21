@@ -1,4 +1,4 @@
-[ ] Spróbować usunąć dashboard
+[x] Spróbować usunąć dashboard
 [ ] Gdy wygaśnie expires na tokenie -> wylogować
 [ ] Error handling w przypadku błedu pobrania danych
 [ ] Loading spinner powoduje wariowanie

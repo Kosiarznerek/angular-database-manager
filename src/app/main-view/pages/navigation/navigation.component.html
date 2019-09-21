@@ -71,7 +71,8 @@
 
     <!-- Add Content Here -->
     <div class="container">
-      <router-outlet></router-outlet>
+      <app-dashboard *ngIf="!myOutlet.isActivated"></app-dashboard>
+      <router-outlet #myOutlet="outlet"></router-outlet>
     </div>
 
   </mat-sidenav-content>
