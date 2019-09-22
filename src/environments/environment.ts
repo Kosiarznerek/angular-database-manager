@@ -4,7 +4,11 @@
 
 export const environment = {
   production: false,
-  serverOrigin: 'http://localhost:3000',
+  serverPort: '3000',
+  serverDomain: 'localhost',
+  get serverOrigin() {
+    return `http://${this.serverDomain}:${this.serverPort}`;
+  },
 };
 
 /*

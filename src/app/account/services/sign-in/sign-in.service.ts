@@ -4,6 +4,7 @@ import {Observable, of} from 'rxjs';
 import {IFormControlConfiguration} from '../../../shared/dynamic-form/dynamic-form.component.models';
 import {environment} from '../../../../environments/environment';
 import {catchError} from 'rxjs/operators';
+import {IAuthenticationToken} from './sign-in.service.models';
 
 @Injectable({
   providedIn: 'root'
@@ -32,13 +33,13 @@ export class SignInService {
    * Signs in to application
    * @param item Sign in model
    */
-  public signIn(item: object): Observable<boolean> {
+  public signIn(item: object): Observable<IAuthenticationToken> {
 
     return this._httpClient.post<boolean>(
       `${environment.serverOrigin}/authentication/0`,
       item,
     ).pipe(
-      catchError(() => of(false)),
+      catchError(() => of(null)),
     );
 
   }

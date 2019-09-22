@@ -1,5 +1,5 @@
 [x] Spróbować usunąć dashboard
-[ ] Obsługa autoryzacji
+[x] Obsługa autoryzacji
 [ ] Gdy wygaśnie expires na tokenie -> wylogować
 [ ] Kontrolka typu Time
 [ ] Kontrolka typu File

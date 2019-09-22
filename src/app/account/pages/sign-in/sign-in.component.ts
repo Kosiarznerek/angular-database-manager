@@ -6,6 +6,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {finalize} from 'rxjs/operators';
 import {Router} from '@angular/router';
 import {SignInService} from '../../services/sign-in/sign-in.service';
+import {AuthenticationGuard} from '../../../authentication/authentication.guard';
 
 @Component({
   templateUrl: './sign-in.component.html',
@@ -20,7 +21,7 @@ export class SignInComponent implements OnInit {
   constructor(
     private readonly _signInService: SignInService,
     private readonly _matSnackBar: MatSnackBar,
-    private readonly _router: Router,
+    private readonly _router: Router
   ) {
   }
 
@@ -45,10 +46,19 @@ export class SignInComponent implements OnInit {
     // Submitting data
     this._signInService.signIn(data.getRawValue()).pipe(
       finalize(() => this.formSubmitModeEnabled = false)
-    ).subscribe(
-      response => !response
-        ? this._showSignInErrorSnackBar()
-        : this._router.navigate(['main']),
+    ).subscribe(token => {
+
+        // No token -> show error
+        if (!token) {
+          this._showSignInErrorSnackBar();
+          return;
+        }
+
+        // Otherwise save token and navigate to main
+        AuthenticationGuard.AuthenticationToken = token;
+        this._router.navigate(['main']);
+
+      },
       () => this._showSignInErrorSnackBar(),
     );
 

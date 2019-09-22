@@ -8,6 +8,7 @@ import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {GridComponent} from '../grid/grid.component';
 import {DetailsComponent} from '../details/details.component';
 import {ControllerTypeErrorComponent} from '../controller-type-error/controller-type-error.component';
+import {AuthenticationGuard} from '../../../authentication/authentication.guard';
 
 @Component({
   templateUrl: './navigation.component.html',
@@ -110,6 +111,7 @@ export class NavigationComponent {
    */
   public onSignOutButtonClickHandler() {
 
+    AuthenticationGuard.AuthenticationToken = null;
     this._router.navigate(['/']);
 
   }
