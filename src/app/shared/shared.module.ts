@@ -9,6 +9,7 @@ import {InfoCardComponent} from './info-card/info-card.component';
 import {MatAutocompleteEnforceSelectionDirective} from './mat-autocomplete-enforce-selection/mat-autocomplete-enforce-selection.directive';
 import {MatChipsFormControlComponent} from './mat-chips-form-control/mat-chips-form-control.component';
 import {PaginatorComponent} from './paginator/paginator.component';
+import {TruncateTextPipe} from './truncate-text/truncate-text.pipe';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import {PaginatorComponent} from './paginator/paginator.component';
     MatAutocompleteEnforceSelectionDirective,
     MatChipsFormControlComponent,
     PaginatorComponent,
+    TruncateTextPipe,
   ],
   imports: [
     CommonModule,
@@ -31,6 +33,7 @@ import {PaginatorComponent} from './paginator/paginator.component';
     ActionListComponent,
     InfoCardComponent,
     PaginatorComponent,
+    TruncateTextPipe,
   ],
 })
 export class SharedModule {

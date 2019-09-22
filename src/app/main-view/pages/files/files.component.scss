@@ -1,0 +1,22 @@
+/* Loading spinner */
+mat-spinner {
+  margin: 0 auto;
+}
+
+/* File icon container */
+.file-icon-container {
+
+  display: flex;
+  margin: 0 auto;
+  padding: 10px;
+  cursor: pointer;
+
+  mat-icon {
+    display: block;
+    margin: 0 auto;
+    height: 50px;
+    width: 50px;
+    font-size: 50px;
+  }
+
+}

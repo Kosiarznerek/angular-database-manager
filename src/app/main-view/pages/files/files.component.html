@@ -4,9 +4,35 @@
 <mat-divider></mat-divider>
 <br/>
 
-<!-- Details -->
-<div class="row">
-  <div class="col-12">
-    Files
+<!-- Files -->
+<div class="row" *ngIf="files$ | async as files; else loadingFilesTemplate">
+
+  <div class="col-lg-2 col-md-3 col-6" *ngFor="let file of files">
+    <button class="file-icon-container" mat-button [matMenuTriggerData]="{element: file}"
+            [matMenuTriggerFor]="fileContextMenu">
+      <mat-icon color="primary">insert_drive_file</mat-icon>
+      <span>{{ file.name | truncateText : 20 : ' ...' }}</span>
+    </button>
   </div>
+
 </div>
+<!-- /Files -->
+
+<!-- File context menu -->
+<mat-menu #fileContextMenu="matMenu">
+  <ng-template matMenuContent let-element="element">
+    <button mat-menu-item (click)="onFileRenameButtonClick(element)">
+      <mat-icon>edit</mat-icon>
+      <span>Zmień nazwę</span>
+    </button>
+    <button mat-menu-item [disabled]="!element.deletable" (click)="onFileDeleteButtonClick(element)">
+      <mat-icon>delete</mat-icon>
+      <span>Usuń</span>
+    </button>
+  </ng-template>
+</mat-menu>
+
+<!-- Loading template -->
+<ng-template #loadingFilesTemplate>
+  <mat-spinner></mat-spinner>
+</ng-template>

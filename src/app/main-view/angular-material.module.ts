@@ -12,6 +12,9 @@ import {MatCardModule} from '@angular/material/card';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatInputModule} from '@angular/material/input';
 
 @NgModule({
   imports: [
@@ -27,6 +30,9 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     MatProgressSpinnerModule,
     MatTabsModule,
     MatSnackBarModule,
+    MatMenuModule,
+    MatDialogModule,
+    MatInputModule,
   ],
   exports: [
     CommonModule,
@@ -41,6 +47,9 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     MatProgressSpinnerModule,
     MatTabsModule,
     MatSnackBarModule,
+    MatMenuModule,
+    MatDialogModule,
+    MatInputModule,
   ],
 })
 export class AngularMaterialModule {

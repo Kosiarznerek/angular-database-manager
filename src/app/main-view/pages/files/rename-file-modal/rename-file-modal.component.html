@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>Zmień nazwę</h1>
+
+<mat-dialog-content>
+  <mat-form-field>
+    <input matInput placeholder="Nazwa pliku" [value]="newFileName" (input)="newFileName = $event.target.value">
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button class="flex-fill" mat-raised-button mat-dialog-close>
+    Anuluj
+  </button>
+  <button class="flex-fill" mat-raised-button [mat-dialog-close]="newFileName" color="primary">
+    Zatwierdź
+  </button>
+</mat-dialog-actions>
