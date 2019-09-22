@@ -9,6 +9,7 @@ import {GridComponent} from '../grid/grid.component';
 import {DetailsComponent} from '../details/details.component';
 import {ControllerTypeErrorComponent} from '../controller-type-error/controller-type-error.component';
 import {AuthenticationGuard} from '../../../authentication/authentication.guard';
+import {FilesComponent} from '../files/files.component';
 
 @Component({
   templateUrl: './navigation.component.html',
@@ -88,6 +89,9 @@ export class NavigationComponent {
         break;
       case 'details':
         route.component = DetailsComponent;
+        break;
+      case 'files':
+        route.component = FilesComponent;
         break;
       case 'empty':
         break;

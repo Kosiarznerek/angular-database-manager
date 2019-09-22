@@ -2,6 +2,7 @@
 export type TController =
   'grid' |
   'details' |
+  'files' |
   'empty';
 
 // Menu item interface
