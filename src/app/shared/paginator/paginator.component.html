@@ -3,7 +3,9 @@
 
     <!-- Page info -->
     <div class="col-md-5 line-height-40">
-      {{ state.currentPage }} z {{state.totalPages}}
+      <ng-container *ngIf="state">
+        {{ state.currentPage }} z {{state.totalPages}}
+      </ng-container>
     </div>
 
     <!-- Page change -->
@@ -18,12 +20,14 @@
 
     <!-- Page sizes -->
     <div class="col-md-5 line-height-40">
-      Ilość el. na strone:
-      <mat-select [value]="state.currentPageSize" (valueChange)="onCurrentPageSizeChangeHandler($event)">
-        <mat-option *ngFor="let pageSize of state.pageSizeOptions" [value]="pageSize">
-          {{ pageSize }}
-        </mat-option>
-      </mat-select>
+      <ng-container *ngIf="state">
+        Ilość el. na strone:
+        <mat-select [value]="state.currentPageSize" (valueChange)="onCurrentPageSizeChangeHandler($event)">
+          <mat-option *ngFor="let pageSize of state.pageSizeOptions" [value]="pageSize">
+            {{ pageSize }}
+          </mat-option>
+        </mat-select>
+      </ng-container>
     </div>
 
   </div>

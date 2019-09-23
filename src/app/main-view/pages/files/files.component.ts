@@ -1,12 +1,24 @@
 import {Component, OnInit} from '@angular/core';
-import {Observable, of} from 'rxjs';
+import {BehaviorSubject, merge, Observable, of} from 'rxjs';
 import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {ActivatedRoute} from '@angular/router';
 import {FilesService} from '../../services/files/files.service';
-import {IFileInformation} from '../../services/files/files.service.models';
-import {catchError, filter, map, switchMap, tap} from 'rxjs/operators';
+import {IFileInformation as IBasicFileInformation, IFilesData as IBasicFilesData} from '../../services/files/files.service.models';
+import {catchError, debounceTime, distinctUntilChanged, filter, finalize, map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import {MatDialog, MatSnackBar} from '@angular/material';
 import {RenameFileModalComponent} from './rename-file-modal/rename-file-modal.component';
+import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
+import {FormControl} from '@angular/forms';
+
+// Extending file information
+interface IFileInformation extends IBasicFileInformation {
+  isDeleted?: boolean;
+}
+
+// Extending files data
+interface IFilesData extends IBasicFilesData {
+  values: IFileInformation[];
+}
 
 @Component({
   selector: 'app-files',
@@ -17,7 +29,10 @@ export class FilesComponent implements OnInit {
 
   // Component data
   public menuItem$: Observable<IMenuItem>;
-  public files$: Observable<IFileInformation[]>;
+  private readonly _onPaginatorStateChanges: BehaviorSubject<IPaginatorState>;
+  public filesData$: Observable<IFilesData>;
+  public fileNameControl: FormControl;
+  public showLoadingBackdrop: boolean;
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
@@ -25,6 +40,10 @@ export class FilesComponent implements OnInit {
     private readonly _matDialog: MatDialog,
     private readonly _matSnackBar: MatSnackBar,
   ) {
+
+    // Set paginator change chandler
+    this._onPaginatorStateChanges = new BehaviorSubject(null);
+
   }
 
   ngOnInit() {
@@ -32,17 +51,47 @@ export class FilesComponent implements OnInit {
     // Getting menu item data
     this.menuItem$ = this._activatedRoute.data as Observable<IMenuItem>;
 
-    // Getting all files
-    this.files$ = this.menuItem$.pipe(
+    // Creating file name control
+    this.fileNameControl = new FormControl('');
+
+    // Creating get files data observable
+    const getFilesData$: Observable<IFilesData> = this.menuItem$.pipe(
+      tap(() => this.showLoadingBackdrop = true),
       map(v => v.controllerSource),
-      switchMap(controllerSource => this._filesService.getFilesInformation(controllerSource))
+      switchMap(controllerSource => this._filesService.getFilesInformation(
+        controllerSource,
+        this._onPaginatorStateChanges.value,
+        this.fileNameControl.value
+      ).pipe(finalize(() => this.showLoadingBackdrop = false))),
     );
+
+    // Setting files data observable
+    this.filesData$ = merge(
+      this._onPaginatorStateChanges.pipe( // page change
+        switchMap(paginatorState => getFilesData$),
+      ),
+      this.fileNameControl.valueChanges.pipe( // filter change
+        debounceTime(400),
+        distinctUntilChanged(),
+        switchMap(search => getFilesData$),
+      )
+    ).pipe(shareReplay());
+
+  }
+
+  /**
+   * Executes when page has changed
+   * @param event New paginator state
+   */
+  public onPaginatorStateChange(event: IPaginatorState): void {
+
+    this._onPaginatorStateChanges.next(event);
 
   }
 
   /**
    * Executes when delete button was clicked
-   * @param file
+   * @param file File to delete
    */
   public onFileDeleteButtonClick(file: IFileInformation): void {
 
@@ -65,6 +114,7 @@ export class FilesComponent implements OnInit {
           'Pliki',
           {duration: 2000},
         );
+        file.isDeleted = true;
         return;
       }
 
@@ -81,7 +131,7 @@ export class FilesComponent implements OnInit {
 
   /**
    * Executes when rename button was clicked
-   * @param file
+   * @param file File to rename
    */
   public onFileRenameButtonClick(file: IFileInformation): void {
 
@@ -124,6 +174,14 @@ export class FilesComponent implements OnInit {
       );
 
     });
+
+  }
+
+  /**
+   * Executes when download button on file was clicked
+   * @param file File to download
+   */
+  public onFileDownloadButtonClick(file: IFileInformation): void {
 
   }
 
