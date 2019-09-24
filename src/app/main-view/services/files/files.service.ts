@@ -29,8 +29,6 @@ export class FilesService {
     controllerSource: string, paginator?: IPaginatorState, fileName: string = ''
   ): Observable<IFilesData> {
 
-    console.log('getFilesInformation');
-
     if (!paginator) {
       paginator = {
         currentPage: 1,
