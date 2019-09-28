@@ -1,8 +1,9 @@
 import {Injectable} from '@angular/core';
-import {Observable, of} from 'rxjs';
-import {IFileInformation, IFilesData} from './files.service.models';
-import {delay, map} from 'rxjs/operators';
+import {interval, Observable, of} from 'rxjs';
+import {IFileInformation, IFilesData, IFilesUploadDefinition} from './files.service.models';
+import {delay, filter, map, takeWhile} from 'rxjs/operators';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,23 @@ export class FilesService {
     deletable: Math.random() < 0.9
   }));
 
-  constructor() {
+  constructor(
+    private readonly _httpClient: HttpClient,
+  ) {
+  }
+
+  /**
+   * Gets definition for files
+   * @param controllerSource Controller url
+   */
+  public getFilesUploadDefinition(controllerSource: string): Observable<IFilesUploadDefinition> {
+
+    return of({
+      allowUpload: true,
+      acceptFileTypes: [],
+      maxFileSize: Infinity
+    }).pipe(delay(Math.random() * 5_000));
+
   }
 
   /**
@@ -55,10 +72,11 @@ export class FilesService {
 
   /**
    * Renames file
+   * @param controllerSource Controller url
    * @param id File id
    * @param name File new name
    */
-  public renameFile(id: number, name: string): Observable<boolean> {
+  public renameFile(controllerSource: string, id: number, name: string): Observable<boolean> {
 
     this._files.find(v => v.id === id).name = name;
     return of(true).pipe(
@@ -69,9 +87,10 @@ export class FilesService {
 
   /**
    * Deletes file
+   * @param controllerSource Controller url
    * @param id File id to delete
    */
-  public deleteFile(id: number): Observable<boolean> {
+  public deleteFile(controllerSource: string, id: number): Observable<boolean> {
 
     this._files = this._files.filter(v => v.id !== id);
     return of(true).pipe(
@@ -82,13 +101,54 @@ export class FilesService {
 
   /**
    * Downloads file
+   * @param controllerSource Controller url
    * @param id File id to download
    */
-  public downloadFile(id: number): Observable<any> {
+  public downloadFile(controllerSource: string, id: number): Observable<any> {
 
     return of(true).pipe(
       delay(Math.random() * 5_000)
     );
+
+  }
+
+  /**
+   * Uploads file
+   * @param controllerSource Controller source
+   * @param file File to upload
+   * @return Boolean true or false depending on success or number for progress
+   */
+  public uploadFile(controllerSource: string, file: File): Observable<boolean | number> {
+
+    return interval(100).pipe(
+      takeWhile(v => v <= 100),
+      filter(v => v % 10 === 0),
+      map(v => v === 100 ? true : v)
+    );
+
+    // return this._httpClient.post<boolean>(controllerSource, file, {
+    //   reportProgress: true, observe: 'events', headers: new HttpHeaders(
+    //     {'Content-Type': 'multipart/form-data'},
+    //   )
+    // }).pipe(
+    //   map((event) => { // Depending on event type
+    //
+    //     switch (event.type) {
+    //
+    //       case HttpEventType.UploadProgress:
+    //         return Math.round(100 * event.loaded / event.total);
+    //
+    //       case HttpEventType.Response:
+    //         return event.body;
+    //
+    //       default:
+    //         throw new Error();
+    //
+    //     }
+    //
+    //   }),
+    //   catchError(err => of(false))
+    // );
 
   }
 

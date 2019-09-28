@@ -1,10 +1,27 @@
-import {Component, OnInit} from '@angular/core';
-import {BehaviorSubject, merge, Observable, of} from 'rxjs';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {BehaviorSubject, from, merge, Observable, of, Subject} from 'rxjs';
 import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {ActivatedRoute} from '@angular/router';
 import {FilesService} from '../../services/files/files.service';
-import {IFileInformation as IBasicFileInformation, IFilesData as IBasicFilesData} from '../../services/files/files.service.models';
-import {catchError, debounceTime, distinctUntilChanged, filter, finalize, map, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {v4 as uuid} from 'uuid';
+import {
+  IFileInformation as IBasicFileInformation,
+  IFilesData as IBasicFilesData,
+  IFilesUploadDefinition
+} from '../../services/files/files.service.models';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  map,
+  mergeMap,
+  shareReplay,
+  switchMap,
+  takeUntil,
+  tap
+} from 'rxjs/operators';
 import {MatDialog, MatSnackBar} from '@angular/material';
 import {RenameFileModalComponent} from './rename-file-modal/rename-file-modal.component';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
@@ -25,14 +42,19 @@ interface IFilesData extends IBasicFilesData {
   templateUrl: './files.component.html',
   styleUrls: ['./files.component.scss']
 })
-export class FilesComponent implements OnInit {
+export class FilesComponent implements OnInit, OnDestroy {
 
   // Component data
+  private readonly ngOnDestroy$: Subject<void>;
   public menuItem$: Observable<IMenuItem>;
   private readonly _onPaginatorStateChanges: BehaviorSubject<IPaginatorState>;
   public filesData$: Observable<IFilesData>;
   public fileNameControl: FormControl;
   public showLoadingBackdrop: boolean;
+
+  // Upload file
+  public uploadFilesDefinition$: Observable<IFilesUploadDefinition>;
+  public readonly currentlyUploadedFiles: Array<File & { progress: number | boolean, id: string }>;
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
@@ -41,8 +63,14 @@ export class FilesComponent implements OnInit {
     private readonly _matSnackBar: MatSnackBar,
   ) {
 
+    // Create ng on destroy
+    this.ngOnDestroy$ = new Subject<void>();
+
     // Set paginator change chandler
     this._onPaginatorStateChanges = new BehaviorSubject(null);
+
+    // Set array of files
+    this.currentlyUploadedFiles = [];
 
   }
 
@@ -77,6 +105,17 @@ export class FilesComponent implements OnInit {
       )
     ).pipe(shareReplay());
 
+    // Getting upload files definition
+    this.uploadFilesDefinition$ = this.menuItem$.pipe(
+      map(v => v.controllerSource),
+      switchMap(controllerSource => this._filesService.getFilesUploadDefinition(controllerSource)),
+      shareReplay()
+    );
+
+  }
+
+  ngOnDestroy(): void {
+    this.ngOnDestroy$.next();
   }
 
   /**
@@ -103,8 +142,11 @@ export class FilesComponent implements OnInit {
     );
 
     // Sending request
-    this._filesService.deleteFile(file.id).pipe(
-      catchError(() => of(false))
+    this.menuItem$.pipe(
+      map(v => v.controllerSource),
+      switchMap(controllerSource => this._filesService.deleteFile(controllerSource, file.id).pipe(
+        catchError(() => of(false))
+      ))
     ).subscribe(isSuccess => {
 
       // Showing message and delete file
@@ -149,8 +191,11 @@ export class FilesComponent implements OnInit {
         'Pliki',
         {duration: 2000},
       )),
-      switchMap(newFileName => this._filesService.renameFile(file.id, newFileName).pipe(
-        map(success => ({success, newFileName})),
+      switchMap(newFileName => this.menuItem$.pipe(
+        map(v => v.controllerSource),
+        switchMap(controllerSource => this._filesService.renameFile(controllerSource, file.id, newFileName).pipe(
+          map(success => ({success, newFileName}))
+        ))
       )),
       catchError(e => of({success: false, newFileName: file.name}))
     ).subscribe(response => {
@@ -182,6 +227,62 @@ export class FilesComponent implements OnInit {
    * @param file File to download
    */
   public onFileDownloadButtonClick(file: IFileInformation): void {
+
+  }
+
+  /**
+   * Executes when value has changed
+   * @param input File input
+   */
+  public onFileControlValueChange(input: EventTarget): void {
+
+    // Extract files
+    const {files} = input as HTMLInputElement;
+
+    // No files
+    if (files.length === 0) {
+      this._matSnackBar.open('Nie wybrano pliku', 'Pliki', {duration: 2000});
+      return;
+    }
+
+    // Filter files by acceptFileTypes
+    const filteredFilesByType$: Observable<File> = this.uploadFilesDefinition$.pipe(
+      mergeMap(({acceptFileTypes}) => from(files).pipe(
+        filter(({name}) => (/[.]/.exec(name)) // filter files by allowed extensions
+          ? acceptFileTypes.includes(/[^.]+$/.exec(name)[0]) ||
+          acceptFileTypes.length === 0
+          : false
+        )
+      ))
+    );
+
+    // Then filter by max file
+    const filesToUpload$: Observable<File> = this.uploadFilesDefinition$.pipe(
+      mergeMap(({maxFileSize}) => filteredFilesByType$.pipe(
+        filter(({size}) => size < maxFileSize)
+      ))
+    );
+
+    // Upload files
+    this.menuItem$.pipe(
+      switchMap(({controllerSource}) => filesToUpload$.pipe(
+        map(fileToUpload => Object.assign(fileToUpload, {id: uuid()})), // add id
+        mergeMap(fileToUpload => this._filesService.uploadFile(controllerSource, fileToUpload).pipe(
+          map(progress => Object.assign(fileToUpload, {progress}))
+        ))
+      )),
+      takeUntil(this.ngOnDestroy$)
+    ).subscribe(fileStatus => {
+
+      // File is in array -> update
+      if (this.currentlyUploadedFiles.find(f => f.id === fileStatus.id)) {
+        const index = this.currentlyUploadedFiles.findIndex(f => f.id === fileStatus.id);
+        this.currentlyUploadedFiles[index].progress = fileStatus.progress;
+      } else { // Add
+        this.currentlyUploadedFiles.unshift(fileStatus);
+      }
+
+    });
 
   }
 

@@ -79,3 +79,9 @@ mat-tab-group.mat-tab-header-display-none mat-tab-header {
 .mat-tab-body-content {
   overflow: visible !important;
 }
+
+/* Material tabs fill */
+mat-tab-group.flex-labels .mat-tab-label {
+  display: flex;
+  flex: 1;
+}
