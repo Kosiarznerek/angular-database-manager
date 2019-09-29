@@ -152,7 +152,7 @@
       <mat-icon>edit</mat-icon>
       <span>Zmień nazwę</span>
     </button>
-    <button mat-menu-item (click)="onFileDownloadButtonClick(element)">
+    <button mat-menu-item [disabled]="!element.downloadable" (click)="onFileDownloadButtonClick(element)">
       <mat-icon>save</mat-icon>
       <span>Pobierz</span>
     </button>

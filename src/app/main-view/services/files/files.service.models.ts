@@ -12,6 +12,7 @@ export interface IFileInformation {
   id: number;
   name: string;
   deletable: boolean;
+  downloadable: boolean;
 }
 
 // File data interface
