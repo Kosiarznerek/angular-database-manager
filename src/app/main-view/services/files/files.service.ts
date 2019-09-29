@@ -1,21 +1,15 @@
 import {Injectable} from '@angular/core';
-import {interval, Observable, of} from 'rxjs';
-import {IFileInformation, IFilesData, IFilesUploadDefinition} from './files.service.models';
-import {delay, filter, map, takeWhile} from 'rxjs/operators';
+import {Observable, of} from 'rxjs';
+import {IFilesData, IFilesUploadDefinition} from './files.service.models';
+import {catchError, filter, map} from 'rxjs/operators';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpEventType} from '@angular/common/http';
+import {environment} from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilesService {
-
-  // Test data
-  private _files: IFileInformation[] = new Array(2000).fill(0).map((v, i) => ({
-    id: i,
-    name: `Testowy plik ${i}`,
-    deletable: Math.random() < 0.9
-  }));
 
   constructor(
     private readonly _httpClient: HttpClient,
@@ -28,11 +22,11 @@ export class FilesService {
    */
   public getFilesUploadDefinition(controllerSource: string): Observable<IFilesUploadDefinition> {
 
-    return of({
-      allowUpload: true,
-      acceptFileTypes: [],
-      maxFileSize: Infinity
-    }).pipe(delay(Math.random() * 5_000));
+    return this._httpClient
+      .get<IFilesUploadDefinition>(`${environment.serverOrigin}/${controllerSource}/getFilesUploadDefinition`)
+      .pipe(
+        catchError(() => of(null)),
+      );
 
   }
 
@@ -46,26 +40,14 @@ export class FilesService {
     controllerSource: string, paginator?: IPaginatorState, fileName: string = ''
   ): Observable<IFilesData> {
 
-    if (!paginator) {
-      paginator = {
-        currentPage: 1,
-        currentPageSize: 20,
-        totalPages: 2000 / 20,
-        totalRecords: 2000,
-        pageSizeOptions: [20, 50, 100]
-      };
-    }
-
-    return of(this._files).pipe(
-      delay(Math.random() * 5_000),
-      map(k => k
-        .filter(v => v.name.toLowerCase().indexOf(fileName.toLowerCase()) >= 0)
-        .slice(
-          (paginator.currentPage - 1) * paginator.currentPageSize,
-          (paginator.currentPage - 1) * paginator.currentPageSize + paginator.currentPageSize
-        )
-      ),
-      map(values => Object.assign(paginator, {values}))
+    return this._httpClient.post<IFilesData>(
+      `${environment.serverOrigin}/${controllerSource}/getFilesInformation`,
+      paginator,
+      {
+        params: {
+          searchPhrase: fileName
+        }
+      }
     );
 
   }
@@ -78,9 +60,14 @@ export class FilesService {
    */
   public renameFile(controllerSource: string, id: number, name: string): Observable<boolean> {
 
-    this._files.find(v => v.id === id).name = name;
-    return of(true).pipe(
-      delay(Math.random() * 5_000)
+    return this._httpClient.put<boolean>(
+      `${environment.serverOrigin}/${controllerSource}/renameFile/${id}`,
+      null,
+      {
+        params: {name}
+      }
+    ).pipe(
+      catchError(() => of(false))
     );
 
   }
@@ -92,9 +79,10 @@ export class FilesService {
    */
   public deleteFile(controllerSource: string, id: number): Observable<boolean> {
 
-    this._files = this._files.filter(v => v.id !== id);
-    return of(true).pipe(
-      delay(Math.random() * 5_000)
+    return this._httpClient.delete<boolean>(
+      `${environment.serverOrigin}/${controllerSource}/deleteFile/${id}`,
+    ).pipe(
+      catchError(() => of(false))
     );
 
   }
@@ -103,11 +91,36 @@ export class FilesService {
    * Downloads file
    * @param controllerSource Controller url
    * @param id File id to download
+   * @return File data or number for progress
    */
-  public downloadFile(controllerSource: string, id: number): Observable<any> {
+  public downloadFile(controllerSource: string, id: number): Observable<Blob | number> {
 
-    return of(true).pipe(
-      delay(Math.random() * 5_000)
+    return this._httpClient.get<Blob>(
+      `${environment.serverOrigin}/${controllerSource}/downloadFile/${id}`,
+      {reportProgress: true, observe: 'events', responseType: 'blob' as any}
+    ).pipe(
+      filter(({type}) =>
+        type === HttpEventType.Sent ||
+        type === HttpEventType.DownloadProgress ||
+        type === HttpEventType.Response
+      ),
+      map(event => { // Depending on event type
+
+        switch (event.type) {
+
+          case HttpEventType.Sent:
+            return 0;
+
+          case HttpEventType.DownloadProgress:
+            return Math.round(100 * event.loaded / event.total);
+
+          case HttpEventType.Response:
+            return event.body;
+
+        }
+
+      }),
+      catchError(() => of(null))
     );
 
   }
@@ -120,35 +133,38 @@ export class FilesService {
    */
   public uploadFile(controllerSource: string, file: File): Observable<boolean | number> {
 
-    return interval(100).pipe(
-      takeWhile(v => v <= 100),
-      filter(v => v % 10 === 0),
-      map(v => v === 100 ? true : v)
-    );
+    // Creating form data
+    const formData = new FormData();
+    formData.append('file', file);
 
-    // return this._httpClient.post<boolean>(controllerSource, file, {
-    //   reportProgress: true, observe: 'events', headers: new HttpHeaders(
-    //     {'Content-Type': 'multipart/form-data'},
-    //   )
-    // }).pipe(
-    //   map((event) => { // Depending on event type
-    //
-    //     switch (event.type) {
-    //
-    //       case HttpEventType.UploadProgress:
-    //         return Math.round(100 * event.loaded / event.total);
-    //
-    //       case HttpEventType.Response:
-    //         return event.body;
-    //
-    //       default:
-    //         throw new Error();
-    //
-    //     }
-    //
-    //   }),
-    //   catchError(err => of(false))
-    // );
+    // Return request
+    return this._httpClient.post<boolean>(
+      `${environment.serverOrigin}/${controllerSource}/uploadFile`, formData, {
+        reportProgress: true, observe: 'events',
+      }).pipe(
+      filter(({type}) =>
+        type === HttpEventType.Sent ||
+        type === HttpEventType.UploadProgress ||
+        type === HttpEventType.Response
+      ),
+      map(event => { // Depending on event type
+
+        switch (event.type) {
+
+          case HttpEventType.Sent:
+            return 0;
+
+          case HttpEventType.UploadProgress:
+            return Math.round(100 * event.loaded / event.total);
+
+          case HttpEventType.Response:
+            return event.body;
+
+        }
+
+      }),
+      catchError(err => of(false))
+    );
 
   }
 

@@ -1,6 +1,6 @@
 [x] Spróbować usunąć dashboard
 [x] Obsługa autoryzacji
-[ ] Wszystkie metody w serwisie do plików powinny dostawać kontroler
+[x] Wszystkie metody w serwisie do plików powinny dostawać kontroler
 [ ] Kontrolka typu File
 [ ] Kontrolka typu Time
 [ ] Poprawić RWD menu

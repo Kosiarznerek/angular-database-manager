@@ -34,7 +34,7 @@
       </div>
 
       <!-- No files -->
-      <div class="col-12" *ngIf="filesData.values.length===0">
+      <div class="col-12" *ngIf="!hasFiles(filesData.values)">
         <app-info-card type="accent" text="Brak plików"></app-info-card>
       </div>
 
@@ -102,6 +102,44 @@
 
   </mat-tab>
   <!-- /Upload files -->
+
+
+  <!-- Downloaded files -->
+  <mat-tab label="Pobieranie" *ngIf="currentlyDownloadedFiles.length > 0">
+    <div class="row">
+      <div class="col-12 mt-2" *ngFor="let fileData of currentlyDownloadedFiles">
+        <mat-card class="currently-downloaded">
+
+          <!-- Title and save button -->
+          <div class="row">
+            <div class="col-8">
+              Nazwa pliku: {{ fileData.name }}
+            </div>
+            <div class="col-4">
+              <button mat-icon-button color="primary" [disabled]="fileData.progress!==true"
+                      (click)="onFileSaveButtonClick(fileData)">
+                <mat-icon>save</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <mat-progress-bar
+            mode="determinate"
+            [color]="fileData.progress===false
+              ? 'warn'
+              : fileData.progress===true
+                ? 'primary'
+                : 'accent'
+            "
+            [value]="fileData.progress===true || fileData.progress===false ? 100 : fileData.progress">
+          </mat-progress-bar>
+
+        </mat-card>
+      </div>
+    </div>
+  </mat-tab>
+
 
 </mat-tab-group>
 <!-- /Whole content -->

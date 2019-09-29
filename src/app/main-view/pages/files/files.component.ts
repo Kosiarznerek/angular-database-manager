@@ -26,6 +26,7 @@ import {MatDialog, MatSnackBar} from '@angular/material';
 import {RenameFileModalComponent} from './rename-file-modal/rename-file-modal.component';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
 import {FormControl} from '@angular/forms';
+import {saveAs} from 'file-saver';
 
 // Extending file information
 interface IFileInformation extends IBasicFileInformation {
@@ -35,6 +36,18 @@ interface IFileInformation extends IBasicFileInformation {
 // Extending files data
 interface IFilesData extends IBasicFilesData {
   values: IFileInformation[];
+}
+
+// Currently uploaded file interface
+interface ICurrentlyUploadedFile extends File {
+  progress: number | boolean;
+  id: string;
+}
+
+// Currently downloaded file interface
+interface ICurrentlyDownloaded extends IFileInformation {
+  progress: number | boolean;
+  data: Blob;
 }
 
 @Component({
@@ -54,7 +67,11 @@ export class FilesComponent implements OnInit, OnDestroy {
 
   // Upload file
   public uploadFilesDefinition$: Observable<IFilesUploadDefinition>;
-  public readonly currentlyUploadedFiles: Array<File & { progress: number | boolean, id: string }>;
+  public readonly currentlyUploadedFiles: Array<ICurrentlyUploadedFile>;
+  private readonly _fileWasUploaded$: Subject<void>;
+
+  // Download file
+  public readonly currentlyDownloadedFiles: Array<ICurrentlyDownloaded>;
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
@@ -71,6 +88,12 @@ export class FilesComponent implements OnInit, OnDestroy {
 
     // Set array of files
     this.currentlyUploadedFiles = [];
+
+    // Set file was uploaded event
+    this._fileWasUploaded$ = new Subject<void>();
+
+    // Set currently downloaded
+    this.currentlyDownloadedFiles = [];
 
   }
 
@@ -102,6 +125,9 @@ export class FilesComponent implements OnInit, OnDestroy {
         debounceTime(400),
         distinctUntilChanged(),
         switchMap(search => getFilesData$),
+      ),
+      this._fileWasUploaded$.pipe( // file was uploaded
+        switchMap(paginatorState => getFilesData$)
       )
     ).pipe(shareReplay());
 
@@ -116,6 +142,16 @@ export class FilesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.ngOnDestroy$.next();
+  }
+
+  /**
+   * Check if array contains files
+   * @param data Data to check
+   */
+  public hasFiles(data: IFileInformation[]): boolean {
+    return data
+      .filter(v => !v.isDeleted)
+      .length > 0;
   }
 
   /**
@@ -228,6 +264,46 @@ export class FilesComponent implements OnInit, OnDestroy {
    */
   public onFileDownloadButtonClick(file: IFileInformation): void {
 
+    // Add to download list
+    this.currentlyDownloadedFiles.unshift(Object.assign({}, file, {progress: 0, data: null}));
+
+    // Show message
+    this._matSnackBar.open(`Rozpoczęto pobieranie ${file.name}`, 'Pliki', {duration: 2000});
+
+    // Download file
+    this.menuItem$.pipe(
+      map(v => v.controllerSource),
+      switchMap(controllerSource => this._filesService.downloadFile(controllerSource, file.id)),
+      takeUntil(this.ngOnDestroy$)
+    ).subscribe(value => {
+
+      // Find file
+      const fileToUpdate = this.currentlyDownloadedFiles.find(v => v.id === file.id);
+
+      // Update data
+      if (typeof value === 'number') {
+        fileToUpdate.progress = value;
+      } else if (value !== null) {
+        this._matSnackBar.open(`Zakończono pobieranie ${file.name}`, 'Pliki', {duration: 2000});
+        fileToUpdate.progress = true;
+        fileToUpdate.data = value;
+      } else {
+        this._matSnackBar.open(`Niepowodzenie pobierania ${file.name}`, 'Pliki', {duration: 2000});
+        fileToUpdate.progress = false;
+      }
+
+    });
+
+  }
+
+  /**
+   * Executes when downloaded file need to be save on computer
+   * @param file Downloaded file
+   */
+  public onFileSaveButtonClick(file: ICurrentlyDownloaded): void {
+
+    saveAs(file.data, file.name);
+
   }
 
   /**
@@ -259,7 +335,7 @@ export class FilesComponent implements OnInit, OnDestroy {
     // Then filter by max file
     const filesToUpload$: Observable<File> = this.uploadFilesDefinition$.pipe(
       mergeMap(({maxFileSize}) => filteredFilesByType$.pipe(
-        filter(({size}) => size < maxFileSize)
+        filter(({size}) => typeof maxFileSize === 'number' ? size < maxFileSize : true)
       ))
     );
 
@@ -278,6 +354,12 @@ export class FilesComponent implements OnInit, OnDestroy {
       if (this.currentlyUploadedFiles.find(f => f.id === fileStatus.id)) {
         const index = this.currentlyUploadedFiles.findIndex(f => f.id === fileStatus.id);
         this.currentlyUploadedFiles[index].progress = fileStatus.progress;
+
+        // If success
+        if (fileStatus.progress === true) {
+          this._fileWasUploaded$.next();
+        }
+
       } else { // Add
         this.currentlyUploadedFiles.unshift(fileStatus);
       }
