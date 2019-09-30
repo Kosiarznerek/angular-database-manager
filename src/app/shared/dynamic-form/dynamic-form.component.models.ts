@@ -5,6 +5,7 @@ export type TFormControlType =
   'number' |
   'email' |
   'date' |
+  'time' |
   'boolean' |
   'hidden' |
   'autocomplete' |
