@@ -47,6 +47,15 @@
         </mat-error>
       </mat-form-field>
 
+      <!-- Time -->
+      <app-mat-time-form-control
+        class="col-12"
+        *ngSwitchCase="'time'"
+        [control]="control"
+        [formGroupContext]="formData"
+        [validatorsTemplate]="validatorsTemplate"
+      ></app-mat-time-form-control>
+
       <!-- boolean -->
       <mat-slide-toggle
         class="col-12"

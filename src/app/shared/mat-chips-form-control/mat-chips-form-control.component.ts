@@ -4,9 +4,11 @@ import {FormGroup} from '@angular/forms';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocomplete, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {IFilteredOptionData} from '../dynamic-form-data/dynamic-form-data.service.models';
+import {Observable} from 'rxjs';
 
 // Adding type to value
 interface IFormControlConfiguration extends IFormControlBasicConfiguration {
+  filteredData$?: Observable<IFilteredOptionData[]>; // from dynamic-form.component
   value: IFilteredOptionData[];
 }
 

@@ -2,7 +2,7 @@
 [x] Obsługa autoryzacji
 [x] Wszystkie metody w serwisie do plików powinny dostawać kontroler
 [x] Kontrolka typu File
-[ ] Kontrolka typu Time
+[x] Kontrolka typu Time
 [ ] Poprawić RWD menu
     https://merlosy.github.io/ngx-material-file-input/
 [ ] Stronnicowanie na gridzie jak w type file (by nie znikało wszystko w chuj)

@@ -10,6 +10,7 @@ import {MatAutocompleteEnforceSelectionDirective} from './mat-autocomplete-enfor
 import {MatChipsFormControlComponent} from './mat-chips-form-control/mat-chips-form-control.component';
 import {PaginatorComponent} from './paginator/paginator.component';
 import {TruncateTextPipe} from './truncate-text/truncate-text.pipe';
+import {MatTimeFormControlComponent} from './mat-time-form-control/mat-time-form-control.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import {TruncateTextPipe} from './truncate-text/truncate-text.pipe';
     MatChipsFormControlComponent,
     PaginatorComponent,
     TruncateTextPipe,
+    MatTimeFormControlComponent,
   ],
   imports: [
     CommonModule,

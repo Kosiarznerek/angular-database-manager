@@ -1,0 +1,22 @@
+<div [formGroup]="formGroupContext">
+  <mat-form-field>
+
+    <!-- Control -->
+    <input [formControl]="controlValue"
+           [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"
+           type="time"
+           matInput
+    />
+
+    <!-- Hidden control with value -->
+    <input type="hidden" [formControlName]="control.name"
+           [placeholder]="(control.validator.isRequired ? '* ' : '') + control.displayName"/>
+
+    <!-- Error -->
+    <mat-error>
+      <ng-container *ngTemplateOutlet="validatorsTemplate; context:{controlName: control.name}">
+      </ng-container>
+    </mat-error>
+
+  </mat-form-field>
+</div>
