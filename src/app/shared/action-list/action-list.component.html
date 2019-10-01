@@ -11,7 +11,7 @@
 
 
 <!-- Container -->
-<ng-container *ngIf="listItems$ | async as actionListItems; else loadingSpinnerTemplate">
+<ng-container *ngIf="actionListItems$ | async as actionListItems; else loadingSpinnerTemplate">
 
   <!-- No data info -->
   <app-info-card

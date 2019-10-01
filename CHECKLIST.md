@@ -6,14 +6,14 @@
 - [x] Kontrolka typu Time
 - [x] Poprawić RWD menu
       https://merlosy.github.io/ngx-material-file-input/
-- [ ] Stronnicowanie na gridzie jak w type file (by nie znikało wszystko w chuj)
+- [x] Stronnicowanie na gridzie jak w type file (by nie znikało wszystko w chuj)
 - [ ] Error handling w przypadku błedu pobrania danych. 
       Gdy nie da się pobrać danych w wielu miejscach jest ładowanie w nieskończoność. 
       Należy urzyć retry(3) po czym wyświetlić komunikat.
 - [ ] Filtrowanie na gridzie
       
 # BUGS
-- [ ] Loading spinner powoduje wariowanie na gridzie
+- [x] Loading spinner powoduje wariowanie na gridzie
 - [ ] Chips menu nie powinien znikać po wybraniu opcji
 - [ ] Chips zablokować możliwość dodawania tych samych rekordów
 - [ ] Za dużo zapytań po wysłaniu formularza. Wykonuje się onChange

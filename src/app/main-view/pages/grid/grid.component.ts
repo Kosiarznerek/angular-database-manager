@@ -1,16 +1,16 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Observable, of} from 'rxjs';
+import {merge, Observable, of, Subject} from 'rxjs';
 import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {GridService} from '../../services/grid/grid.service';
 import {IGridDefinition} from '../../services/grid/grid.service.models';
 import {IActionInfo, IActionListItem} from '../../../shared/action-list/action-list.component.models';
 import {IFormControlConfiguration} from '../../../shared/dynamic-form/dynamic-form.component.models';
-import {catchError, finalize, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, filter, map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import {EGridState} from './grid.component.models';
-import {FormGroup} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {IPaginatorState} from '../../../shared/paginator/paginator.component.models';
+import {FormGroup} from '@angular/forms';
 
 @Component({
   templateUrl: './grid.component.html',
@@ -29,17 +29,30 @@ export class GridComponent implements OnInit {
   public paginatorState: IPaginatorState;
 
   // Active form controls configuration
-  public activeFormSubmitModeEnabled: boolean; // force to show spinner on form
   public activeFormControlsConfiguration: IFormControlConfiguration[];
 
   // Simple getters
   public EGridState = EGridState;
+
+  // Events observables
+  public isLoading: boolean;
+  public readonly paginatorStateChange$: Subject<IPaginatorState>;
+  public readonly actionListItemDelete$: Subject<IActionListItem>;
+  public readonly actionListItemEdit$: Subject<FormGroup>;
+  public readonly actionListItemAdd$: Subject<FormGroup>;
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _gridService: GridService,
     private readonly _matSnackBar: MatSnackBar,
   ) {
+
+    // Assign events
+    this.paginatorStateChange$ = new Subject();
+    this.actionListItemDelete$ = new Subject();
+    this.actionListItemEdit$ = new Subject();
+    this.actionListItemAdd$ = new Subject();
+
   }
 
   ngOnInit() {
@@ -49,20 +62,22 @@ export class GridComponent implements OnInit {
     this.gridDefinition$ = this.menuItem$.pipe(
       switchMap(({controllerSource}) => this._gridService.getDefinition(controllerSource))
     ).pipe(shareReplay());
-    this._loadActionListItems();
+    this._initActionListItems();
 
   }
 
   /**
    * Loads action list item
    */
-  private _loadActionListItems(): void {
+  private _initActionListItems(): void {
 
-    this.actionListItems$ = this.menuItem$.pipe(
+    // Creating get items observable
+    const getItems$: Observable<IActionListItem[]> = this.menuItem$.pipe(
       switchMap(({controllerSource}) => this._gridService.getData(
         controllerSource,
         this.paginatorState,
       ).pipe(
+        // Update paginator state
         tap(({totalPages, currentPage, currentPageSize, pageSizeOptions, totalRecords}) => this.paginatorState = {
           totalPages,
           currentPage,
@@ -70,19 +85,58 @@ export class GridComponent implements OnInit {
           totalRecords,
           pageSizeOptions,
         }),
+
+        // Map to items
         map(v => v.items),
       )),
-    ).pipe(shareReplay());
+    );
 
-  }
-
-  /**
-   * Executes when paginator state has been change
-   */
-  public onPaginatorStateChangeHandler(state: IPaginatorState): void {
-
-    this.paginatorState = state;
-    this._loadActionListItems();
+    // Create action list items
+    this.actionListItems$ = merge(
+      getItems$, // to first load
+      this.paginatorStateChange$.pipe( // page change
+        tap(v => this.isLoading = true), // setting loading to true
+        switchMap(v => getItems$),
+      ),
+      this.actionListItemDelete$.pipe( // on item delete
+        tap(v => this.isLoading = true), // setting loading to true
+        map(itemData => itemData.id),
+        switchMap(itemId => this.menuItem$.pipe( // get controller source
+          map(v => v.controllerSource),
+          switchMap(ctrl => this._gridService.removeItem(ctrl, itemId as string).pipe( // remove item
+            catchError(() => of(false)),
+            tap(response => this._handleDeleteActionItemResponse(response)),
+            filter(response => response), // reload only if success
+            switchMap(() => getItems$)
+          )),
+        )),
+      ),
+      this.actionListItemAdd$.pipe( // on item add
+        tap(v => this.isLoading = true), // setting loading to true
+        switchMap(formData => this.menuItem$.pipe( // get controller source
+          map(v => v.controllerSource),
+          switchMap(ctrl => this._gridService.addItem(ctrl, formData.getRawValue()).pipe( // add item
+            tap(response => this._handleAddActionItemResponse(response)),
+            filter(response => response), // reload only if success
+            switchMap(() => getItems$)
+          ))
+        ))
+      ),
+      this.actionListItemEdit$.pipe( // on item edit
+        tap(v => this.isLoading = true), // setting loading to true
+        switchMap(formData => this.menuItem$.pipe( // get controller source
+          map(v => v.controllerSource),
+          switchMap(ctrl => this._gridService.editItem(ctrl, formData.getRawValue()).pipe( // edit item
+            tap(response => this._handleEditActionItemResponse(response)),
+            filter(response => response), // reload only if success
+            switchMap(() => getItems$)
+          ))
+        ))
+      )
+    ).pipe(
+      tap(v => this.isLoading = false), // setting loading to false
+      shareReplay()
+    );
 
   }
 
@@ -98,7 +152,6 @@ export class GridComponent implements OnInit {
       case 'edit':
         this.activeFormControlsConfiguration = null;
         this.menuItem$.pipe(
-          take(1),
           switchMap(({controllerSource}) => this._gridService.getEditItemConfiguration(
             controllerSource,
             action.actionListItem.id,
@@ -109,7 +162,7 @@ export class GridComponent implements OnInit {
 
       // Deleting item
       case 'delete':
-        this._onDeleteHandler(action.actionListItem);
+        this.actionListItemDelete$.next(action.actionListItem);
         break;
 
       // Adding new
@@ -128,97 +181,62 @@ export class GridComponent implements OnInit {
   }
 
   /**
-   * Executes when delete button has been clicked
+   * Handles delete response
+   * @param response Response
    */
-  private _onDeleteHandler(itemData: IActionListItem): void {
+  private _handleDeleteActionItemResponse(response: boolean): void {
 
-    this.menuItem$.pipe(
-      take(1),
-      map(v => v.controllerSource),
-      switchMap(controllerSource =>
-        this._gridService.removeItem(controllerSource, itemData.id),
-      ),
-      catchError(() => of(false))
-    ).subscribe(response => {
-      this._matSnackBar.open(
-        response ? 'Usunięto poprawnie' : 'Błąd podczas usuwania',
-        'Formularz',
-        {duration: 2000},
-      );
-      if (!response) {
-        return;
-      }
+    // Show message
+    this._matSnackBar.open(
+      response ? 'Usunięto poprawnie' : 'Błąd podczas usuwania',
+      'Formularz',
+      {duration: 2000},
+    );
+
+    // If success go back to action list
+    if (response) {
       this.activeGridState = EGridState.ActionList;
-      this._loadActionListItems();
-    });
+    }
 
   }
 
   /**
-   * Executes when add form has been submitted
+   * Handles add item response
+   * @param response Response
    */
-  public onAddSubmitHandler(formData: FormGroup): void {
+  private _handleAddActionItemResponse(response: boolean): void {
 
-    // Setting loading to true
-    this.activeFormSubmitModeEnabled = true;
+    // Show message
+    this._matSnackBar.open(
+      response ? 'Dodano poprawnie' : 'Błąd podczas dodawania',
+      'Formularz',
+      {duration: 2000},
+    );
 
-    // Submitting form
-    this.menuItem$.pipe(
-      take(1),
-      switchMap(({controllerSource}) => this._gridService.addItem(
-        controllerSource,
-        formData.getRawValue(),
-      )),
-      finalize(() => {
-        this.activeFormSubmitModeEnabled = false;
-      }),
-      catchError(() => of(false))
-    ).subscribe(response => {
-      this._matSnackBar.open(
-        response ? 'Dodano poprawnie' : 'Błąd podczas dodawania',
-        'Formularz',
-        {duration: 2000},
-      );
-      if (!response) {
-        return;
-      }
+    // If success go back to action list
+    if (response) {
       this.activeGridState = EGridState.ActionList;
-      this._loadActionListItems();
-    });
+    }
 
   }
 
   /**
-   * Executes when edit form has been submitted
+   * Handles edit item response
+   * @param response Response
    */
-  public onEditSubmitHandler(formData: FormGroup): void {
+  private _handleEditActionItemResponse(response: boolean): void {
 
-    // Setting loading to true
-    this.activeFormSubmitModeEnabled = true;
+    // Show message
+    this._matSnackBar.open(
+      response ? 'Edytowano poprawnie' : 'Błąd podczas edycji',
+      'Formularz',
+      {duration: 2000},
+    );
 
-    // Submitting form
-    this.menuItem$.pipe(
-      take(1),
-      switchMap(({controllerSource}) => this._gridService.editItem(
-        controllerSource,
-        formData.getRawValue(),
-      )),
-      finalize(() => {
-        this.activeFormSubmitModeEnabled = false;
-      }),
-      catchError(() => of(false))
-    ).subscribe(response => {
-      this._matSnackBar.open(
-        response ? 'Edytowano poprawnie' : 'Błąd podczas edycji',
-        'Formularz',
-        {duration: 2000},
-      );
-      if (!response) {
-        return;
-      }
+    // If success go back to action list
+    if (response) {
       this.activeGridState = EGridState.ActionList;
-      this._loadActionListItems();
-    });
+    }
 
   }
 
