@@ -4,7 +4,7 @@
 - [x] Wszystkie metody w serwisie do plików powinny dostawać kontroler
 - [x] Kontrolka typu File
 - [x] Kontrolka typu Time
-- [ ] Poprawić RWD menu
+- [x] Poprawić RWD menu
       https://merlosy.github.io/ngx-material-file-input/
 - [ ] Stronnicowanie na gridzie jak w type file (by nie znikało wszystko w chuj)
 - [ ] Error handling w przypadku błedu pobrania danych. 

@@ -18,9 +18,7 @@ import {FilesComponent} from '../files/files.component';
 export class NavigationComponent {
 
   // Component data
-  isHandset$: Observable<boolean> = this._breakpointObserver.observe(Breakpoints.Handset).pipe(
-    map(result => result.matches)
-  );
+  public readonly isHandset$: Observable<boolean>;
   public menuItems: IMenuItem[];
 
   constructor(
@@ -29,7 +27,15 @@ export class NavigationComponent {
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _router: Router
   ) {
+
+    // Assign breakpoint
+    this.isHandset$ = this._breakpointObserver.observe(Breakpoints.Handset).pipe(
+      map(result => result.matches)
+    );
+
+    // Init component
     this._initComponent();
+
   }
 
   /**

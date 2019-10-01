@@ -1,3 +1,25 @@
+<!-- Header -->
+<mat-toolbar color="primary">
+
+  <button
+    (click)="drawer.toggle()"
+    class="mr-16"
+    aria-label="Toggle sidenav"
+    mat-icon-button
+    type="button">
+    <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+  </button>
+
+  <span class="flex-fill">Database Manager</span>
+
+  <!-- Sign out button click -->
+  <button mat-icon-button (click)="onSignOutButtonClickHandler()">
+    <mat-icon>power_settings_new</mat-icon>
+  </button>
+
+</mat-toolbar>
+
+<!-- Sidenav container -->
 <mat-sidenav-container class="sidenav-container">
 
   <!-- Side navigation -->
@@ -47,35 +69,11 @@
 
   <!-- Content -->
   <mat-sidenav-content>
-
-    <!-- Content header -->
-    <mat-toolbar color="primary">
-
-      <button
-        (click)="drawer.toggle()"
-        *ngIf="isHandset$ | async"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        type="button">
-        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      </button>
-
-      <span class="flex-fill">Database Manager</span>
-
-      <!-- Sign out button click -->
-      <button mat-icon-button (click)="onSignOutButtonClickHandler()">
-        <mat-icon>power_settings_new</mat-icon>
-      </button>
-
-    </mat-toolbar>
-
-    <!-- Add Content Here -->
     <div class="container">
       <app-dashboard *ngIf="!myOutlet.isActivated"></app-dashboard>
       <router-outlet #myOutlet="outlet"></router-outlet>
     </div>
-
   </mat-sidenav-content>
-  <!-- /Content -->
 
 </mat-sidenav-container>
+<!-- /Sidenav container -->
