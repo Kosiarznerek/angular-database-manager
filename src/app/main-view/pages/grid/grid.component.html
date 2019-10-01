@@ -11,12 +11,11 @@
   <mat-tab [label]="EGridState.ActionList">
     <app-action-list
       [allowAdding]="(gridDefinition$ | async)?.allowAdding"
-      [actionListItems]="(gridData$ | async)?.items"
+      [actionListItems$]="actionListItems$"
       (action)="onActionListItemClickHandler($event)">
     </app-action-list>
     <app-paginator
       class="mt-16"
-      *ngIf="paginatorState"
       [state]="paginatorState"
       (stateChange)="onPaginatorStateChangeHandler($event)"
     ></app-paginator>

@@ -1,12 +1,12 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {IMenuItem} from '../../services/navigation/navigation.service.models';
 import {GridService} from '../../services/grid/grid.service';
-import {IGridData, IGridDefinition} from '../../services/grid/grid.service.models';
+import {IGridDefinition} from '../../services/grid/grid.service.models';
 import {IActionInfo, IActionListItem} from '../../../shared/action-list/action-list.component.models';
 import {IFormControlConfiguration} from '../../../shared/dynamic-form/dynamic-form.component.models';
-import {finalize, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, finalize, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
 import {EGridState} from './grid.component.models';
 import {FormGroup} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -22,7 +22,7 @@ export class GridComponent implements OnInit {
 
   // Grid data
   public activeGridState: EGridState;
-  public gridData$: Observable<IGridData>;
+  public actionListItems$: Observable<IActionListItem[]>;
   public gridDefinition$: Observable<IGridDefinition>;
 
   // Paginator state
@@ -49,16 +49,16 @@ export class GridComponent implements OnInit {
     this.gridDefinition$ = this.menuItem$.pipe(
       switchMap(({controllerSource}) => this._gridService.getDefinition(controllerSource))
     ).pipe(shareReplay());
-    this._loadGridData();
+    this._loadActionListItems();
 
   }
 
   /**
-   * Load grid data
+   * Loads action list item
    */
-  private _loadGridData(): void {
+  private _loadActionListItems(): void {
 
-    this.gridData$ = this.menuItem$.pipe(
+    this.actionListItems$ = this.menuItem$.pipe(
       switchMap(({controllerSource}) => this._gridService.getData(
         controllerSource,
         this.paginatorState,
@@ -70,6 +70,7 @@ export class GridComponent implements OnInit {
           totalRecords,
           pageSizeOptions,
         }),
+        map(v => v.items),
       )),
     ).pipe(shareReplay());
 
@@ -81,7 +82,7 @@ export class GridComponent implements OnInit {
   public onPaginatorStateChangeHandler(state: IPaginatorState): void {
 
     this.paginatorState = state;
-    this._loadGridData();
+    this._loadActionListItems();
 
   }
 
@@ -137,25 +138,19 @@ export class GridComponent implements OnInit {
       switchMap(controllerSource =>
         this._gridService.removeItem(controllerSource, itemData.id),
       ),
-    ).subscribe(
-      response => {
-        this._matSnackBar.open(
-          response ? 'Usunięto poprawnie' : 'Błąd podczas usuwania',
-          'Formularz',
-          {duration: 2000},
-        );
-        if (!response) {
-          return;
-        }
-        this.activeGridState = EGridState.ActionList;
-        this._loadGridData();
-      },
-      error => this._matSnackBar.open(
-        'Błąd podczas usuwania',
+      catchError(() => of(false))
+    ).subscribe(response => {
+      this._matSnackBar.open(
+        response ? 'Usunięto poprawnie' : 'Błąd podczas usuwania',
         'Formularz',
         {duration: 2000},
-      ),
-    );
+      );
+      if (!response) {
+        return;
+      }
+      this.activeGridState = EGridState.ActionList;
+      this._loadActionListItems();
+    });
 
   }
 
@@ -177,25 +172,19 @@ export class GridComponent implements OnInit {
       finalize(() => {
         this.activeFormSubmitModeEnabled = false;
       }),
-    ).subscribe(
-      response => {
-        this._matSnackBar.open(
-          response ? 'Dodano poprawnie' : 'Błąd podczas dodawania',
-          'Formularz',
-          {duration: 2000},
-        );
-        if (!response) {
-          return;
-        }
-        this.activeGridState = EGridState.ActionList;
-        this._loadGridData();
-      },
-      error => this._matSnackBar.open(
-        'Błąd podczas dodawania',
+      catchError(() => of(false))
+    ).subscribe(response => {
+      this._matSnackBar.open(
+        response ? 'Dodano poprawnie' : 'Błąd podczas dodawania',
         'Formularz',
         {duration: 2000},
-      ),
-    );
+      );
+      if (!response) {
+        return;
+      }
+      this.activeGridState = EGridState.ActionList;
+      this._loadActionListItems();
+    });
 
   }
 
@@ -217,25 +206,19 @@ export class GridComponent implements OnInit {
       finalize(() => {
         this.activeFormSubmitModeEnabled = false;
       }),
-    ).subscribe(
-      response => {
-        this._matSnackBar.open(
-          response ? 'Edytowano poprawnie' : 'Błąd podczas edycji',
-          'Formularz',
-          {duration: 2000},
-        );
-        if (!response) {
-          return;
-        }
-        this.activeGridState = EGridState.ActionList;
-        this._loadGridData();
-      },
-      error => this._matSnackBar.open(
-        'Błąd podczas edycji',
+      catchError(() => of(false))
+    ).subscribe(response => {
+      this._matSnackBar.open(
+        response ? 'Edytowano poprawnie' : 'Błąd podczas edycji',
         'Formularz',
         {duration: 2000},
-      ),
-    );
+      );
+      if (!response) {
+        return;
+      }
+      this.activeGridState = EGridState.ActionList;
+      this._loadActionListItems();
+    });
 
   }
 
